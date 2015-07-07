@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.WebSettings;
@@ -203,6 +204,7 @@ public class Loginactivity extends Activity {
                             outputStreamWriter.flush();
                             String response = streamToString(httpsURLConnection.getInputStream());
                             JSONObject jsonObject = (JSONObject) new JSONTokener(response).nextValue();
+                            Log.d("qiqi","" + jsonObject.toString());
                             profile_picture = jsonObject.getJSONObject("user").getString("profile_picture");
                             bio = jsonObject.getJSONObject("user").getString("bio");
                             full_name = jsonObject.getJSONObject("user").getString("full_name");
