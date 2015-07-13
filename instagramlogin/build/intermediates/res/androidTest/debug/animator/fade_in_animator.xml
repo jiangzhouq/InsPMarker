@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <objectAnimator
+        android:duration="800"
+        android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+        android:propertyName="alpha"
+        android:valueFrom="0"
+        android:valueTo="1"
+        android:valueType="floatType" />
+</set><!-- From: file:/home/qjizho/Documents/code/github/InsPMarker/instagramlogin/src/main/res/animator/fade_in_animator.xml --><!-- From: file:/home/qjizho/Documents/code/github/InsPMarker/instagramlogin/build/intermediates/bundles/debug/res/animator/fade_in_animator.xml -->
