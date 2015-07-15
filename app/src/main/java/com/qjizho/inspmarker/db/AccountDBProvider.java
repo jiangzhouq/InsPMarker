@@ -17,8 +17,6 @@ import com.qjizho.inspmarker.db.Account;
 public class AccountDBProvider extends ContentProvider{
     public static final String DB_NAME = "insp.db";
 
-    public static final String URI_AUTHORITY = "com.qjizho.insp";
-
     private static final int ACCOUNT =1;
     private static final int ACCOUNTS = 2;
     public static final String URI_MIME_ACCOUNT
@@ -33,8 +31,8 @@ public class AccountDBProvider extends ContentProvider{
 
     static {
         mUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        mUriMatcher.addURI(URI_AUTHORITY, "account/#", 1);
-        mUriMatcher.addURI(URI_AUTHORITY, "accounts", 2);
+        mUriMatcher.addURI(Account.URI_AUTHORITY, "account/#", 1);
+        mUriMatcher.addURI(Account.URI_AUTHORITY, "accounts", 2);
     }
 
     @Override

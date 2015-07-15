@@ -3,6 +3,7 @@ package com.qjizho.inspmarker.activity;
 import android.app.Fragment;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -11,19 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 import com.nomad.instagramlogin.InstaLogin;
 import com.nomad.instagramlogin.Keys;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
-
-import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
 
 /**
  * Created by qjizho on 15-7-13.
@@ -45,7 +37,7 @@ public class FragmentLogin extends Fragment {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                InstaLogin instaLogin = new InstaLogin(getActivity(),
+                InstaLogin instaLogin = new InstaLogin(FragmentLogin.this,
                         "c4d946f3dc8a43699aeb7c57b5cbc12d",
                         "6aba840c8c984aadbae55bad66c5eab3",
                         "https://loggedinbaby");
@@ -56,14 +48,15 @@ public class FragmentLogin extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("qiqi" ,"onActivityResult");
         if (requestCode == Keys.LOGIN_REQ) {
             // Make sure the request was successful
             if (resultCode == getActivity().RESULT_OK) {
                 Bundle bundle = data.getExtras();
                 if(!bundle.getString(InstaLogin.ACCESS_TOKEN).isEmpty()){
+                    Log.d("qiqi", "" + data.getExtras().getString(InstaLogin.FULLNAME));
                     insertAccount(bundle);
-                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, new FragmentGridview());
+                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, new FragmentGridview()).commit();
                 }
             }
         }
@@ -76,6 +69,7 @@ public class FragmentLogin extends Fragment {
         value.put(Account.COLUMN_BIO, bundle.getString(InstaLogin.BIO));
         value.put(Account.COLUMN_ACCESS_TOKEN, bundle.getString(InstaLogin.ACCESS_TOKEN));
         value.put(Account.COLUMN_ACTIVED, 1);
-        getActivity().getContentResolver().insert(Account.CONTENT_URI_ACCOUNT,value);
+        Uri uri = getActivity().getContentResolver().insert(Account.CONTENT_URI_ACCOUNTS, value);
+        Log.d("qiqi", uri.toString());
     }
 }

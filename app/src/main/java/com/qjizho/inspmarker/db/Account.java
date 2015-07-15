@@ -9,6 +9,8 @@ import android.net.Uri;
 public class Account {
     public final static String TABLE_NAME = "account";
 
+    public static final String URI_AUTHORITY = "com.inspmarker.inspmark.accountprovider";
+
     public final static String COLUMN_ID = "_id";
     public final static String COLUMN_ACCOUNT_ID = "account_id";
     public final static String COLUMN_USERNAME = "username";
@@ -28,9 +30,9 @@ public class Account {
     public final static int NUM_ACTIVED = 7;
 
     public final static Uri CONTENT_URI_ACCOUNTS = Uri.parse("content://"
-            + AccountDBProvider.URI_AUTHORITY + "/accounts");
+            + URI_AUTHORITY + "/accounts");
     public final static Uri CONTENT_URI_ACCOUNT = Uri.parse("content://"
-            + AccountDBProvider.URI_AUTHORITY + "/account");
+            + URI_AUTHORITY + "/account");
 
     public long mId;
     public String mAccountId;

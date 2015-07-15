@@ -204,7 +204,7 @@ public class Loginactivity extends Activity {
                             outputStreamWriter.flush();
                             String response = streamToString(httpsURLConnection.getInputStream());
                             JSONObject jsonObject = (JSONObject) new JSONTokener(response).nextValue();
-                            Log.d("qiqi","" + jsonObject.toString());
+                            Log.d("qiqi","InsLoginActivity:" + jsonObject.toString());
                             profile_picture = jsonObject.getJSONObject("user").getString("profile_picture");
                             bio = jsonObject.getJSONObject("user").getString("bio");
                             full_name = jsonObject.getJSONObject("user").getString("full_name");
