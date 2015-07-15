@@ -13,6 +13,8 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -56,6 +58,10 @@ public class Loginactivity extends Activity {
         super.onCreate(savedInstanceState);
 //        view = new RelativeLayout(this);
         Bundle bundle = getIntent().getExtras();
+        CookieSyncManager.createInstance(this);
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.removeAllCookie();
+
         CALLBACKURL = bundle.getString(Keys.CALLBACKURL_KEY);
         client_id = bundle.getString(Keys.CLIENT_ID_KEY);
         client_secret = bundle.getString(Keys.CLIENT_SECRET_KEY);
@@ -73,8 +79,9 @@ public class Loginactivity extends Activity {
         webView.getSettings().setJavaScriptEnabled(true);
 //        webView.setLayoutParams(lp);
 //        view.addView(webView);
-        webView.getSettings().setAppCacheEnabled( false );
-        webView.getSettings().setCacheMode( WebSettings.LOAD_NO_CACHE );
+        webView.getSettings().setAppCacheEnabled(false);
+        webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        Log.d("qiqi", "authURLString" + authURLString);
         webView.loadUrl(authURLString);
 //        webView.loadUrl("http://www.google.com");
     }
