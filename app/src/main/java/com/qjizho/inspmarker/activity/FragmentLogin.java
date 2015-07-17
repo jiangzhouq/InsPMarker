@@ -36,8 +36,6 @@ public class FragmentLogin extends Fragment {
         super.onActivityCreated(savedInstanceState);
         Button btn = (Button) getActivity().findViewById(R.id.login);
 
-        Cursor cur = getActivity().getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
-        Log.d("qiqi", cur.getCount() + "");
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -53,7 +51,7 @@ public class FragmentLogin extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("qiqi" ,"onActivityResult");
+        Log.d("qiqi", "onActivityResult");
         if (requestCode == Keys.LOGIN_REQ) {
             // Make sure the request was successful
             if (resultCode == getActivity().RESULT_OK) {
@@ -61,7 +59,13 @@ public class FragmentLogin extends Fragment {
                 if(!bundle.getString(InstaLogin.ACCESS_TOKEN).isEmpty()){
                     Log.d("qiqi", "" + data.getExtras().getString(InstaLogin.FULLNAME));
                     insertAccount(bundle);
-                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, new FragmentGridview()).commit();
+                    Bundle fgBundle = new Bundle();
+                    fgBundle.putString("id", bundle.getString(InstaLogin.ID));
+                    fgBundle.putString("token", bundle.getString(InstaLogin.ACCESS_TOKEN));
+
+                    FragmentGridview gridFragment = new FragmentGridview();
+                    gridFragment.setArguments(fgBundle);
+                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, gridFragment).commit();
                 }
             }
         }

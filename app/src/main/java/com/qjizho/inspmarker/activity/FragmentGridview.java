@@ -46,7 +46,8 @@ public class FragmentGridview extends Fragment{
     GridView gridListView;
     GridViewAdapter mAdapter;
     private ArrayList<String> picUrls = new ArrayList<String>();
-
+    private String mId ;
+    private String mToken;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -68,6 +69,9 @@ public class FragmentGridview extends Fragment{
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         LocalDisplay.init(getActivity());
+        mId = getArguments().getString("id");
+        mToken = getArguments().getString("token");
+
         sGirdImageSize = (LocalDisplay.SCREEN_WIDTH_PIXELS) / 3 ;
         mImageLoader = ImageLoaderFactory.create(getActivity());
         gridListView = (GridView) getActivity().findViewById(R.id.rotate_header_grid_view);
@@ -80,23 +84,25 @@ public class FragmentGridview extends Fragment{
             public void onRefreshBegin(PtrFrameLayout frame) {
                 picUrls.clear();
                 AsyncHttpClient client = new AsyncHttpClient();
-                String str = "https://api.instagram.com/v1/users/self/feed";
+                String str = "https://api.instagram.com/v1/users/%s/follows";
+                str = String.format(str, mId);
                 RequestParams params = new RequestParams();
-                params.add("count", "18");
-                params.add("access_token", "");
+                params.add("count", "150");
+                params.add("access_token", mToken);
                 client.get(str, params, new AsyncHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                         Log.d("qiqi", "code:" + statusCode);
-
                         try {
                             JSONObject obj = new JSONObject(new String(responseBody));
                             JSONArray dataArray = obj.getJSONArray("data");
+                            Log.d("qiqi","Count:" + dataArray.length());
                             for (int i = 0; i < dataArray.length(); i++) {
-                                JSONObject dataObj = dataArray.getJSONObject(i);
-                                JSONObject imageObj = dataObj.getJSONObject("images");
-                                JSONObject lowPObj = imageObj.getJSONObject("low_resolution");
-                                picUrls.add(lowPObj.getString("url"));
+//                                JSONObject dataObj = dataArray.getJSONObject(i);
+//                                JSONObject imageObj = dataObj.getJSONObject("images");
+//                                JSONObject lowPObj = imageObj.getJSONObject("low_resolution");
+//                                Log.d("qiqi",dataArray.getJSONObject(i).getString("id"));
+                                picUrls.add(dataArray.getJSONObject(i).getString("profile_picture"));
 //                                JSONObject thumbnailPObj = imageObj.getJSONObject("thumbnail");
 //                                JSONObject standardPObj = imageObj.getJSONObject("standard_resolution");
 
@@ -131,7 +137,7 @@ public class FragmentGridview extends Fragment{
         mPtrFrame.postDelayed(new Runnable() {
             @Override
             public void run() {
-                // mPtrFrame.autoRefresh();
+                 mPtrFrame.autoRefresh();
             }
         }, 100);
         // updateData();
@@ -150,7 +156,6 @@ public class FragmentGridview extends Fragment{
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            Log.d("qiqi", "get position:" + position + " url:" + picUrls.get(position));
             ViewHolder holder = null;
             if(convertView == null){
                 convertView = mInflater.inflate(R.layout.with_grid_view_item_image_list_grid,null);
