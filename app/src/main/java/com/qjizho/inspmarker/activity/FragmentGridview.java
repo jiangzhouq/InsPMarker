@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -30,7 +32,14 @@ import java.util.ArrayList;
 import in.srain.cube.image.CubeImageView;
 import in.srain.cube.image.ImageLoader;
 import in.srain.cube.image.ImageLoaderFactory;
+import in.srain.cube.mints.base.TitleBaseFragment;
+import in.srain.cube.util.CLog;
 import in.srain.cube.util.LocalDisplay;
+import in.srain.cube.views.GridViewWithHeaderAndFooter;
+import in.srain.cube.views.list.PagedListViewDataAdapter;
+import in.srain.cube.views.loadmore.LoadMoreContainer;
+import in.srain.cube.views.loadmore.LoadMoreGridViewContainer;
+import in.srain.cube.views.loadmore.LoadMoreHandler;
 import in.srain.cube.views.ptr.PtrClassicFrameLayout;
 import in.srain.cube.views.ptr.PtrDefaultHandler;
 import in.srain.cube.views.ptr.PtrFrameLayout;
@@ -42,44 +51,30 @@ import in.srain.cube.views.ptr.PtrHandler;
 public class FragmentGridview extends Fragment{
     private static int sGirdImageSize = 0;
     private ImageLoader mImageLoader;
-    private PtrClassicFrameLayout mPtrFrame;
-    GridView gridListView;
+    private PtrFrameLayout ptrFrameLayout;
     GridViewAdapter mAdapter;
     private ArrayList<String> picUrls = new ArrayList<String>();
     private String mId ;
     private String mToken;
+    private GridViewWithHeaderAndFooter mGridView;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_gridview, container, false);
-    }
-    private Handler handler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what){
-                case 0:
-                    mPtrFrame.refreshComplete();
-                    mAdapter.notifyDataSetChanged();
-                    break;
-            }
-            super.handleMessage(msg);
-        }
-    };
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+
+        final View view = inflater.inflate(R.layout.fragment_gridview, container, false);
         LocalDisplay.init(getActivity());
         mId = getArguments().getString("id");
         mToken = getArguments().getString("token");
 
         sGirdImageSize = (LocalDisplay.SCREEN_WIDTH_PIXELS) / 3 ;
         mImageLoader = ImageLoaderFactory.create(getActivity());
-        gridListView = (GridView) getActivity().findViewById(R.id.rotate_header_grid_view);
-        mAdapter = new GridViewAdapter();
-        gridListView.setAdapter(mAdapter);
-        mPtrFrame = (PtrClassicFrameLayout) getActivity().findViewById(R.id.rotate_header_grid_view_frame);
-        mPtrFrame.setLastUpdateTimeRelateObject(this);
-        mPtrFrame.setPtrHandler(new PtrHandler() {
+//        gridListView = (GridView) getActivity().findViewById(R.id.rotate_header_grid_view);
+//        mAdapter = new GridViewAdapter();
+//        gridListView.setAdapter(mAdapter);
+        ptrFrameLayout = (PtrFrameLayout) view.findViewById(R.id.load_more_grid_view_ptr_frame);
+        ptrFrameLayout.setLoadingMinTime(1000);
+        ptrFrameLayout.setPtrHandler(new PtrHandler() {
             @Override
             public void onRefreshBegin(PtrFrameLayout frame) {
                 picUrls.clear();
@@ -87,7 +82,7 @@ public class FragmentGridview extends Fragment{
                 String str = "https://api.instagram.com/v1/users/%s/follows";
                 str = String.format(str, mId);
                 RequestParams params = new RequestParams();
-                params.add("count", "150");
+//                params.add("count", "-1");
                 params.add("access_token", mToken);
                 client.get(str, params, new AsyncHttpResponseHandler() {
                     @Override
@@ -97,6 +92,7 @@ public class FragmentGridview extends Fragment{
                             JSONObject obj = new JSONObject(new String(responseBody));
                             JSONArray dataArray = obj.getJSONArray("data");
                             Log.d("qiqi","Count:" + dataArray.length());
+                            Log.d("qiqi", new String(responseBody).toString());
                             for (int i = 0; i < dataArray.length(); i++) {
 //                                JSONObject dataObj = dataArray.getJSONObject(i);
 //                                JSONObject imageObj = dataObj.getJSONObject("images");
@@ -122,26 +118,65 @@ public class FragmentGridview extends Fragment{
 
             @Override
             public boolean checkCanDoRefresh(PtrFrameLayout frame, View content, View header) {
-                return PtrDefaultHandler.checkContentCanBePulledDown(frame, content, header);
+                return PtrDefaultHandler.checkContentCanBePulledDown(frame, mGridView, header);
             }
         });
+        mGridView = (GridViewWithHeaderAndFooter) view.findViewById(R.id.load_more_grid_view);
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                CLog.d("grid-view", "onItemClick: %s %s", position, id);
+            }
+        });
+        // header place holder
+        View headerMarginView = new View(getActivity());
+        headerMarginView.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, LocalDisplay.dp2px(20)));
+        mGridView.addHeaderView(headerMarginView);
+
+        // load more container
+        final LoadMoreGridViewContainer loadMoreContainer = (LoadMoreGridViewContainer) view.findViewById(R.id.load_more_grid_view_container);
+        loadMoreContainer.setAutoLoadMore(false);
+        loadMoreContainer.useDefaultHeader();
+        mAdapter = new GridViewAdapter();
+        // binding view and data
+        mGridView.setAdapter(mAdapter);
+        loadMoreContainer.setLoadMoreHandler(new LoadMoreHandler() {
+            @Override
+            public void onLoadMore(LoadMoreContainer loadMoreContainer) {
+//                mDataModel.queryNextPage();
+            }
+        });
+
         // the following are default settings
-        mPtrFrame.setResistance(1.7f);
-        mPtrFrame.setRatioOfHeaderHeightToRefresh(1.2f);
-        mPtrFrame.setDurationToClose(200);
-        mPtrFrame.setDurationToCloseHeader(1000);
-        // default is false
-        mPtrFrame.setPullToRefresh(false);
-        // default is true
-        mPtrFrame.setKeepHeaderWhenRefresh(true);
-        mPtrFrame.postDelayed(new Runnable() {
+//        mPtrFrame.setResistance(1.7f);
+//        mPtrFrame.setRatioOfHeaderHeightToRefresh(1.2f);
+//        mPtrFrame.setDurationToClose(200);
+//        mPtrFrame.setDurationToCloseHeader(1000);
+//        // default is false
+//        mPtrFrame.setPullToRefresh(false);
+//        // default is true
+//        mPtrFrame.setKeepHeaderWhenRefresh(true);
+        ptrFrameLayout.postDelayed(new Runnable() {
             @Override
             public void run() {
-                 mPtrFrame.autoRefresh();
+                ptrFrameLayout.autoRefresh(false);
             }
-        }, 100);
+        }, 150);
         // updateData();
+        return view;
     }
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case 0:
+                    ptrFrameLayout.refreshComplete();
+                    mAdapter.notifyDataSetChanged();
+                    break;
+            }
+            super.handleMessage(msg);
+        }
+    };
 
     class ViewHolder {
         CubeImageView img;
