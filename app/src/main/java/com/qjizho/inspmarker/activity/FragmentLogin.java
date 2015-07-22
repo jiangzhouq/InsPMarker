@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,24 +16,17 @@ import com.nomad.instagramlogin.InstaLogin;
 import com.nomad.instagramlogin.Keys;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
-
 /**
  * Created by qjizho on 15-7-13.
  */
-public class FragmentLogin extends Fragment {
+public class FragmentLogin extends MyTitleBaseFragment {
 
-
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_login, container, false);
-    }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Button btn = (Button) getActivity().findViewById(R.id.login);
+    protected View createView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
+        setHeaderTitle("Dot View Demo");
+        final View view = layoutInflater.inflate(R.layout.fragment_login,null);
+        Button btn = (Button) view.findViewById(R.id.login);
 
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -47,25 +39,28 @@ public class FragmentLogin extends Fragment {
                 instaLogin.login();
             }
         });
+        return view;
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("qiqi", "onActivityResult");
+//        Log.d("qiqi", "onActivityResult");
         if (requestCode == Keys.LOGIN_REQ) {
             // Make sure the request was successful
             if (resultCode == getActivity().RESULT_OK) {
                 Bundle bundle = data.getExtras();
                 if(!bundle.getString(InstaLogin.ACCESS_TOKEN).isEmpty()){
-                    Log.d("qiqi", "" + data.getExtras().getString(InstaLogin.FULLNAME));
+//                    Log.d("qiqi", "" + data.getExtras().getString(InstaLogin.FULLNAME));
                     insertAccount(bundle);
                     Bundle fgBundle = new Bundle();
                     fgBundle.putString("id", bundle.getString(InstaLogin.ID));
                     fgBundle.putString("token", bundle.getString(InstaLogin.ACCESS_TOKEN));
 
-                    FragmentGridview gridFragment = new FragmentGridview();
-                    gridFragment.setArguments(fgBundle);
-                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, gridFragment).commit();
+//                    FragmentGridview gridFragment = new FragmentGridview();
+//                    gridFragment.setArguments(fgBundle);
+                    Log.d("qiqi","start gridview with id :" + bundle.getString(InstaLogin.ID) + " token:" + bundle.getString(InstaLogin.ACCESS_TOKEN));
+                    getContext().pushFragmentToBackStack(FragmentGridview.class, fgBundle);
+//                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, gridFragment).commit();
                 }
             }
         }

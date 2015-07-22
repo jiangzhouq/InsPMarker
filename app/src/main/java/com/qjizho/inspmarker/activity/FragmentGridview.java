@@ -13,14 +13,12 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
-import com.nomad.instagramlogin.InstaLogin;
 import com.qjizho.inspmarker.R;
 
 import org.apache.http.Header;
@@ -36,11 +34,11 @@ import in.srain.cube.mints.base.TitleBaseFragment;
 import in.srain.cube.util.CLog;
 import in.srain.cube.util.LocalDisplay;
 import in.srain.cube.views.GridViewWithHeaderAndFooter;
+import in.srain.cube.views.list.ListPageInfo;
 import in.srain.cube.views.list.PagedListViewDataAdapter;
 import in.srain.cube.views.loadmore.LoadMoreContainer;
 import in.srain.cube.views.loadmore.LoadMoreGridViewContainer;
 import in.srain.cube.views.loadmore.LoadMoreHandler;
-import in.srain.cube.views.ptr.PtrClassicFrameLayout;
 import in.srain.cube.views.ptr.PtrDefaultHandler;
 import in.srain.cube.views.ptr.PtrFrameLayout;
 import in.srain.cube.views.ptr.PtrHandler;
@@ -48,7 +46,7 @@ import in.srain.cube.views.ptr.PtrHandler;
 /**
  * Created by qjizho on 15-7-13.
  */
-public class FragmentGridview extends Fragment{
+public class FragmentGridview extends TitleBaseFragment{
     private static int sGirdImageSize = 0;
     private ImageLoader mImageLoader;
     private PtrFrameLayout ptrFrameLayout;
@@ -58,14 +56,13 @@ public class FragmentGridview extends Fragment{
     private String mToken;
     private GridViewWithHeaderAndFooter mGridView;
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    protected View createView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle) {
 
-        final View view = inflater.inflate(R.layout.fragment_gridview, container, false);
+        final View view = inflater.inflate(R.layout.fragment_gridview, null);
         LocalDisplay.init(getActivity());
-        mId = getArguments().getString("id");
-        mToken = getArguments().getString("token");
+        mId = ((Bundle)mDataIn).getString("id");
+        mToken = ((Bundle)mDataIn).getString("token");
 
         sGirdImageSize = (LocalDisplay.SCREEN_WIDTH_PIXELS) / 3 ;
         mImageLoader = ImageLoaderFactory.create(getActivity());
@@ -140,6 +137,7 @@ public class FragmentGridview extends Fragment{
         mAdapter = new GridViewAdapter();
         // binding view and data
         mGridView.setAdapter(mAdapter);
+
         loadMoreContainer.setLoadMoreHandler(new LoadMoreHandler() {
             @Override
             public void onLoadMore(LoadMoreContainer loadMoreContainer) {
@@ -165,6 +163,7 @@ public class FragmentGridview extends Fragment{
         // updateData();
         return view;
     }
+
     private Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {

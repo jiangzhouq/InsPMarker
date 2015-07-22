@@ -2,8 +2,11 @@ package com.nomad.instagramlogin;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+
+import in.srain.cube.mints.base.TitleBaseFragment;
 
 /**
  * Created by baha on 06/03/15.
@@ -12,7 +15,7 @@ public class InstaLogin {
     private String CLIENT_ID = "https://api.instagram.com/oauth/authorize";
     private String CLIENT_SECRET = "https://api.instagram.com/oauth/access_token";
     private String CALLBACKURL = "";
-    private Fragment context;
+    private TitleBaseFragment context;
 
     public final static String USERNAME="user_name";
     public final static String FULLNAME="full_name";
@@ -21,7 +24,7 @@ public class InstaLogin {
     public final static String ID="id";
     public final static String BIO="bio";
 
-    public InstaLogin(Fragment context, String CLIENT_ID, String CLIENT_SECRET, String CALLBACKURL) {
+    public InstaLogin(TitleBaseFragment context, String CLIENT_ID, String CLIENT_SECRET, String CALLBACKURL) {
         this.CLIENT_ID = CLIENT_ID;
         this.CLIENT_SECRET = CLIENT_SECRET;
         this.CALLBACKURL = CALLBACKURL;

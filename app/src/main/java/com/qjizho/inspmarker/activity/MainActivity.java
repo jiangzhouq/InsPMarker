@@ -11,7 +11,9 @@ import android.widget.TextView;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
 
-public class MainActivity extends ActionBarActivity {
+import in.srain.cube.mints.base.MintsBaseActivity;
+
+public class MainActivity extends MintsBaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,10 +27,18 @@ public class MainActivity extends ActionBarActivity {
             bundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
             FragmentGridview gridFragment = new FragmentGridview();
             gridFragment.setArguments(bundle);
-            getFragmentManager().beginTransaction().add(R.id.frag, gridFragment).commit();
+            pushFragmentToBackStack(FragmentGridview.class, bundle);
+//            getFragmentManager().beginTransaction().add(R.id.frag, gridFragment).commit();
         }else{
-            getFragmentManager().beginTransaction().add(R.id.frag, new FragmentLogin()).commit();
+//            getFragmentManager().beginTransaction().add(R.id.frag, new FragmentLogin()).commit();
+            pushFragmentToBackStack(FragmentLogin.class,null);
         }
+
+    }
+
+    @Override
+    protected int getFragmentContainerId() {
+        return R.id.frag;
     }
 
     @Override

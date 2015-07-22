@@ -13,6 +13,13 @@ signing {
     required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
 }*/
+repositories {
+    mavenCentral()
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+}
+
 android {
     compileSdkVersion 21
     buildToolsVersion "21.1.2"
@@ -34,6 +41,8 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:21.0.3'
+    compile 'in.srain.cube:clog:1.0.2'
+    compile 'in.srain.cube:cube-sdk:1.0.44.40-SNAPSHOT@aar'
 }
 uploadArchives {
     /*configuration = configurations.archives
