@@ -54,6 +54,8 @@ public class FragmentGridview extends TitleBaseFragment{
     private ArrayList<String> picUrls = new ArrayList<String>();
     private String mId ;
     private String mToken;
+    private PagedListViewDataAdapter<String> nAdapter;
+    private ListPageInfo<String> mInfos = new ListPageInfo<String>(12);
     private GridViewWithHeaderAndFooter mGridView;
 
     @Override
@@ -79,7 +81,7 @@ public class FragmentGridview extends TitleBaseFragment{
                 String str = "https://api.instagram.com/v1/users/%s/follows";
                 str = String.format(str, mId);
                 RequestParams params = new RequestParams();
-//                params.add("count", "-1");
+//                params.add("count", "12");
                 params.add("access_token", mToken);
                 client.get(str, params, new AsyncHttpResponseHandler() {
                     @Override
@@ -98,6 +100,7 @@ public class FragmentGridview extends TitleBaseFragment{
                                 picUrls.add(dataArray.getJSONObject(i).getString("profile_picture"));
 //                                JSONObject thumbnailPObj = imageObj.getJSONObject("thumbnail");
 //                                JSONObject standardPObj = imageObj.getJSONObject("standard_resolution");
+                                mInfos.updateListInfo(picUrls, true);
 
                             }
                         } catch (Exception e) {
@@ -136,7 +139,10 @@ public class FragmentGridview extends TitleBaseFragment{
         loadMoreContainer.useDefaultHeader();
         mAdapter = new GridViewAdapter();
         // binding view and data
-        mGridView.setAdapter(mAdapter);
+        nAdapter = new PagedListViewDataAdapter<String>();
+        nAdapter.setViewHolderClass(this, RecentImageViewHolder.class, mImageLoader);
+        nAdapter.setListPageInfo(mInfos);
+        mGridView.setAdapter(nAdapter);
 
         loadMoreContainer.setLoadMoreHandler(new LoadMoreHandler() {
             @Override
@@ -170,7 +176,7 @@ public class FragmentGridview extends TitleBaseFragment{
             switch (msg.what){
                 case 0:
                     ptrFrameLayout.refreshComplete();
-                    mAdapter.notifyDataSetChanged();
+                    nAdapter.notifyDataSetChanged();
                     break;
             }
             super.handleMessage(msg);
