@@ -61,7 +61,7 @@ public class FragmentLogin extends TitleBaseFragment {
 //                    FollowsGridView gridFragment = new FollowsGridView();
 //                    gridFragment.setArguments(fgBundle);
                     Log.d("qiqi","start gridview with id :" + bundle.getString(InstaLogin.ID) + " token:" + bundle.getString(InstaLogin.ACCESS_TOKEN));
-                    getContext().pushFragmentToBackStack(FollowsGridView.class, fgBundle);
+                    getContext().pushFragmentToBackStack(FeedGridView.class, fgBundle);
 //                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, gridFragment).commit();
                 }
             }

@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
+import com.qjizho.inspmarker.fragment.FeedGridView;
 import com.qjizho.inspmarker.fragment.FollowsGridView;
 import com.qjizho.inspmarker.fragment.FragmentLogin;
 
@@ -26,7 +27,7 @@ public class MainActivity extends MintsBaseActivity {
             bundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
             FollowsGridView gridFragment = new FollowsGridView();
             gridFragment.setArguments(bundle);
-            pushFragmentToBackStack(FollowsGridView.class, bundle);
+            pushFragmentToBackStack(FeedGridView.class, bundle);
 //            getFragmentManager().beginTransaction().add(R.id.frag, gridFragment).commit();
         }else{
 //            getFragmentManager().beginTransaction().add(R.id.frag, new FragmentLogin()).commit();
