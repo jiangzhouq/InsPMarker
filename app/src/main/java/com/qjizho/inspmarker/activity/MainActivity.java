@@ -7,6 +7,8 @@ import android.util.Log;
 
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
+import com.qjizho.inspmarker.fragment.FollowsGridView;
+import com.qjizho.inspmarker.fragment.FragmentLogin;
 
 import in.srain.cube.mints.base.MintsBaseActivity;
 

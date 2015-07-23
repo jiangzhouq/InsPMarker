@@ -1,4 +1,4 @@
-package com.qjizho.inspmarker.activity;
+package com.qjizho.inspmarker.helper;
 
 import android.view.LayoutInflater;
 import android.view.View;

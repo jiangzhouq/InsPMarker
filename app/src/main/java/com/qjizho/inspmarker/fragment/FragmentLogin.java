@@ -1,4 +1,4 @@
-package com.qjizho.inspmarker.activity;
+package com.qjizho.inspmarker.fragment;
 
 import android.content.ContentValues;
 import android.content.Intent;
@@ -15,10 +15,13 @@ import com.nomad.instagramlogin.InstaLogin;
 import com.nomad.instagramlogin.Keys;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
+
+import in.srain.cube.mints.base.TitleBaseFragment;
+
 /**
  * Created by qjizho on 15-7-13.
  */
-public class FragmentLogin extends MyTitleBaseFragment {
+public class FragmentLogin extends TitleBaseFragment {
 
 
     @Override

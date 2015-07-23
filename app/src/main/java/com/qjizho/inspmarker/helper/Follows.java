@@ -1,4 +1,4 @@
-package com.qjizho.inspmarker.activity;
+package com.qjizho.inspmarker.helper;
 
 /**
  * Created by qjizho on 15-7-23.
