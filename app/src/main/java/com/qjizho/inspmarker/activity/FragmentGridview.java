@@ -27,6 +27,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import in.srain.cube.app.lifecycle.LifeCycleComponentManager;
 import in.srain.cube.image.CubeImageView;
 import in.srain.cube.image.ImageLoader;
 import in.srain.cube.image.ImageLoaderFactory;
@@ -35,6 +36,7 @@ import in.srain.cube.util.CLog;
 import in.srain.cube.util.LocalDisplay;
 import in.srain.cube.views.GridViewWithHeaderAndFooter;
 import in.srain.cube.views.list.ListPageInfo;
+import in.srain.cube.views.list.PagedListDataModel;
 import in.srain.cube.views.list.PagedListViewDataAdapter;
 import in.srain.cube.views.loadmore.LoadMoreContainer;
 import in.srain.cube.views.loadmore.LoadMoreGridViewContainer;
@@ -55,9 +57,10 @@ public class FragmentGridview extends TitleBaseFragment{
     private String mId ;
     private String mToken;
     private PagedListViewDataAdapter<String> nAdapter;
-    private ListPageInfo<String> mInfos = new ListPageInfo<String>(12);
+    private ListPageInfo<String> mInfos = new ListPageInfo<String>(36);
     private GridViewWithHeaderAndFooter mGridView;
-
+    private String mPagination;
+    LoadMoreGridViewContainer loadMoreContainer;
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle) {
 
@@ -76,44 +79,7 @@ public class FragmentGridview extends TitleBaseFragment{
         ptrFrameLayout.setPtrHandler(new PtrHandler() {
             @Override
             public void onRefreshBegin(PtrFrameLayout frame) {
-                picUrls.clear();
-                AsyncHttpClient client = new AsyncHttpClient();
-                String str = "https://api.instagram.com/v1/users/%s/follows";
-                str = String.format(str, mId);
-                RequestParams params = new RequestParams();
-//                params.add("count", "12");
-                params.add("access_token", mToken);
-                client.get(str, params, new AsyncHttpResponseHandler() {
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                        Log.d("qiqi", "code:" + statusCode);
-                        try {
-                            JSONObject obj = new JSONObject(new String(responseBody));
-                            JSONArray dataArray = obj.getJSONArray("data");
-                            Log.d("qiqi","Count:" + dataArray.length());
-                            Log.d("qiqi", new String(responseBody).toString());
-                            for (int i = 0; i < dataArray.length(); i++) {
-//                                JSONObject dataObj = dataArray.getJSONObject(i);
-//                                JSONObject imageObj = dataObj.getJSONObject("images");
-//                                JSONObject lowPObj = imageObj.getJSONObject("low_resolution");
-//                                Log.d("qiqi",dataArray.getJSONObject(i).getString("id"));
-                                picUrls.add(dataArray.getJSONObject(i).getString("profile_picture"));
-//                                JSONObject thumbnailPObj = imageObj.getJSONObject("thumbnail");
-//                                JSONObject standardPObj = imageObj.getJSONObject("standard_resolution");
-                                mInfos.updateListInfo(picUrls, true);
-
-                            }
-                        } catch (Exception e) {
-                            Log.d("qiqi", "error:" + e.toString());
-                        }
-                        handler.sendEmptyMessage(0);
-                    }
-
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-
-                    }
-                });
+                startRequest("");
             }
 
             @Override
@@ -134,8 +100,8 @@ public class FragmentGridview extends TitleBaseFragment{
         mGridView.addHeaderView(headerMarginView);
 
         // load more container
-        final LoadMoreGridViewContainer loadMoreContainer = (LoadMoreGridViewContainer) view.findViewById(R.id.load_more_grid_view_container);
-        loadMoreContainer.setAutoLoadMore(false);
+        loadMoreContainer = (LoadMoreGridViewContainer) view.findViewById(R.id.load_more_grid_view_container);
+        loadMoreContainer.setAutoLoadMore(true);
         loadMoreContainer.useDefaultHeader();
         mAdapter = new GridViewAdapter();
         // binding view and data
@@ -143,14 +109,17 @@ public class FragmentGridview extends TitleBaseFragment{
         nAdapter.setViewHolderClass(this, RecentImageViewHolder.class, mImageLoader);
         nAdapter.setListPageInfo(mInfos);
         mGridView.setAdapter(nAdapter);
-
         loadMoreContainer.setLoadMoreHandler(new LoadMoreHandler() {
             @Override
             public void onLoadMore(LoadMoreContainer loadMoreContainer) {
+                Log.d("qiqi", "Start load more");
+                mInfos.prepareForNextPage();
 //                mDataModel.queryNextPage();
+                if (!mPagination.isEmpty())
+                    startRequest(mPagination);
             }
         });
-
+        loadMoreContainer.loadMoreFinish(false, true);
         // the following are default settings
 //        mPtrFrame.setResistance(1.7f);
 //        mPtrFrame.setRatioOfHeaderHeightToRefresh(1.2f);
@@ -170,12 +139,65 @@ public class FragmentGridview extends TitleBaseFragment{
         return view;
     }
 
+    private void startRequest(String url){
+
+        picUrls.clear();
+        AsyncHttpClient client = new AsyncHttpClient();
+        String str = "https://api.instagram.com/v1/users/%s/follows";
+        str = String.format(str, mId);
+        RequestParams params = new RequestParams();
+        if(url.isEmpty()){
+            url = str;
+            params.add("count", "36");
+            params.add("access_token", mToken);
+        }
+        Log.d("qiqi", "request url:" + url);
+        client.get(url, params, new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                Log.d("qiqi", "code:" + statusCode);
+                try {
+                    JSONObject obj = new JSONObject(new String(responseBody));
+                    Log.d("qiqi","obj:"+obj.toString());
+                    JSONObject pObj = obj.getJSONObject("pagination");
+                    mPagination = pObj.isNull("next_url") ? "":pObj.getString("next_url");
+                    Log.d("qiqi","mPagination:"+mPagination);
+                    JSONArray dataArray = obj.getJSONArray("data");
+                    Log.d("qiqi","Count:" + dataArray.length());
+//                            Log.d("qiqi", new String(responseBody).toString());
+                    for (int i = 0; i < dataArray.length(); i++) {
+//                                JSONObject dataObj = dataArray.getJSONObject(i);
+//                                JSONObject imageObj = dataObj.getJSONObject("images");
+//                                JSONObject lowPObj = imageObj.getJSONObject("low_resolution");
+//                                Log.d("qiqi",dataArray.getJSONObject(i).getString("id"));
+                        picUrls.add(dataArray.getJSONObject(i).getString("profile_picture"));
+//                                JSONObject thumbnailPObj = imageObj.getJSONObject("thumbnail");
+//                                JSONObject standardPObj = imageObj.getJSONObject("standard_resolution");
+
+                    }
+                    Log.d("qiqi", "Before, mInfos.length:" + mInfos.getListLength());
+                    Log.d("qiqi", "Add count:" + picUrls.size());
+                    mInfos.updateListInfo(picUrls, !mPagination.isEmpty());
+                    Log.d("qiqi", "Then, mInfos.length:" + mInfos.getListLength());
+                } catch (Exception e) {
+                    Log.d("qiqi", "error:" + e.toString());
+                }
+                handler.sendEmptyMessage(0);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                Log.d("qiqi","statusCode:" + statusCode);
+            }
+        });
+    }
     private Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case 0:
                     ptrFrameLayout.refreshComplete();
+                    loadMoreContainer.loadMoreFinish(mInfos.getDataList().isEmpty(), mInfos.hasMore());
                     nAdapter.notifyDataSetChanged();
                     break;
             }
