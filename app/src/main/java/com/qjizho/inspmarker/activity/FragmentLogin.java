@@ -1,6 +1,5 @@
 package com.qjizho.inspmarker.activity;
 
-import android.app.Fragment;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -56,10 +55,10 @@ public class FragmentLogin extends MyTitleBaseFragment {
                     fgBundle.putString("id", bundle.getString(InstaLogin.ID));
                     fgBundle.putString("token", bundle.getString(InstaLogin.ACCESS_TOKEN));
 
-//                    FragmentGridview gridFragment = new FragmentGridview();
+//                    FollowsGridView gridFragment = new FollowsGridView();
 //                    gridFragment.setArguments(fgBundle);
                     Log.d("qiqi","start gridview with id :" + bundle.getString(InstaLogin.ID) + " token:" + bundle.getString(InstaLogin.ACCESS_TOKEN));
-                    getContext().pushFragmentToBackStack(FragmentGridview.class, fgBundle);
+                    getContext().pushFragmentToBackStack(FollowsGridView.class, fgBundle);
 //                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, gridFragment).commit();
                 }
             }

@@ -1,25 +1,20 @@
 package com.qjizho.inspmarker.activity;
 
-import android.app.Fragment;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.qjizho.inspmarker.R;
+import com.qjizho.inspmarker.db.Account;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -27,7 +22,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import in.srain.cube.app.lifecycle.LifeCycleComponentManager;
 import in.srain.cube.image.CubeImageView;
 import in.srain.cube.image.ImageLoader;
 import in.srain.cube.image.ImageLoaderFactory;
@@ -36,7 +30,6 @@ import in.srain.cube.util.CLog;
 import in.srain.cube.util.LocalDisplay;
 import in.srain.cube.views.GridViewWithHeaderAndFooter;
 import in.srain.cube.views.list.ListPageInfo;
-import in.srain.cube.views.list.PagedListDataModel;
 import in.srain.cube.views.list.PagedListViewDataAdapter;
 import in.srain.cube.views.loadmore.LoadMoreContainer;
 import in.srain.cube.views.loadmore.LoadMoreGridViewContainer;
@@ -48,16 +41,16 @@ import in.srain.cube.views.ptr.PtrHandler;
 /**
  * Created by qjizho on 15-7-13.
  */
-public class FragmentGridview extends TitleBaseFragment{
+public class FollowsGridView extends TitleBaseFragment{
     private static int sGirdImageSize = 0;
     private ImageLoader mImageLoader;
     private PtrFrameLayout ptrFrameLayout;
-    GridViewAdapter mAdapter;
-    private ArrayList<String> picUrls = new ArrayList<String>();
+//    GridViewAdapter mAdapter;
+    private ArrayList<Follows> follows;
     private String mId ;
     private String mToken;
-    private PagedListViewDataAdapter<String> nAdapter;
-    private ListPageInfo<String> mInfos = new ListPageInfo<String>(36);
+    private PagedListViewDataAdapter<Follows> nAdapter;
+    private ListPageInfo<Follows> mInfos = new ListPageInfo<Follows>(36);
     private GridViewWithHeaderAndFooter mGridView;
     private String mPagination;
     LoadMoreGridViewContainer loadMoreContainer;
@@ -92,6 +85,11 @@ public class FragmentGridview extends TitleBaseFragment{
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 CLog.d("grid-view", "onItemClick: %s %s", position, id);
+                Bundle bundle = new Bundle();
+                bundle.putString("id",((Follows)nAdapter.getListPageInfo().getItem((int)id)).mId);
+                bundle.putString("token", mToken);
+                getContext().pushFragmentToBackStack(RecentGridView.class, bundle);
+
             }
         });
         // header place holder
@@ -103,10 +101,10 @@ public class FragmentGridview extends TitleBaseFragment{
         loadMoreContainer = (LoadMoreGridViewContainer) view.findViewById(R.id.load_more_grid_view_container);
         loadMoreContainer.setAutoLoadMore(true);
         loadMoreContainer.useDefaultHeader();
-        mAdapter = new GridViewAdapter();
+//        mAdapter = new GridViewAdapter();
         // binding view and data
-        nAdapter = new PagedListViewDataAdapter<String>();
-        nAdapter.setViewHolderClass(this, RecentImageViewHolder.class, mImageLoader);
+        nAdapter = new PagedListViewDataAdapter<Follows>();
+        nAdapter.setViewHolderClass(this, FollowsGridViewHolder.class, mImageLoader);
         nAdapter.setListPageInfo(mInfos);
         mGridView.setAdapter(nAdapter);
         loadMoreContainer.setLoadMoreHandler(new LoadMoreHandler() {
@@ -141,7 +139,7 @@ public class FragmentGridview extends TitleBaseFragment{
 
     private void startRequest(String url){
 
-        picUrls.clear();
+        follows = new ArrayList<Follows>();
         AsyncHttpClient client = new AsyncHttpClient();
         String str = "https://api.instagram.com/v1/users/%s/follows";
         str = String.format(str, mId);
@@ -164,20 +162,26 @@ public class FragmentGridview extends TitleBaseFragment{
                     Log.d("qiqi","mPagination:"+mPagination);
                     JSONArray dataArray = obj.getJSONArray("data");
                     Log.d("qiqi","Count:" + dataArray.length());
+                    Follows mFollow;
 //                            Log.d("qiqi", new String(responseBody).toString());
                     for (int i = 0; i < dataArray.length(); i++) {
+                        mFollow = new Follows();
 //                                JSONObject dataObj = dataArray.getJSONObject(i);
 //                                JSONObject imageObj = dataObj.getJSONObject("images");
 //                                JSONObject lowPObj = imageObj.getJSONObject("low_resolution");
 //                                Log.d("qiqi",dataArray.getJSONObject(i).getString("id"));
-                        picUrls.add(dataArray.getJSONObject(i).getString("profile_picture"));
+                        mFollow.mUserName = dataArray.getJSONObject(i).getString("username");
+                        mFollow.mProfilePciture = dataArray.getJSONObject(i).getString("profile_picture");
+                        mFollow.mFullName = dataArray.getJSONObject(i).getString("full_name");
+                        mFollow.mId = dataArray.getJSONObject(i).getString("id");
+                                follows.add(mFollow);
 //                                JSONObject thumbnailPObj = imageObj.getJSONObject("thumbnail");
 //                                JSONObject standardPObj = imageObj.getJSONObject("standard_resolution");
 
                     }
                     Log.d("qiqi", "Before, mInfos.length:" + mInfos.getListLength());
-                    Log.d("qiqi", "Add count:" + picUrls.size());
-                    mInfos.updateListInfo(picUrls, !mPagination.isEmpty());
+                    Log.d("qiqi", "Add count:" + follows.size());
+                    mInfos.updateListInfo(follows, !mPagination.isEmpty());
                     Log.d("qiqi", "Then, mInfos.length:" + mInfos.getListLength());
                 } catch (Exception e) {
                     Log.d("qiqi", "error:" + e.toString());
@@ -208,47 +212,47 @@ public class FragmentGridview extends TitleBaseFragment{
     class ViewHolder {
         CubeImageView img;
     }
-    private class GridViewAdapter extends BaseAdapter {
-
-        private LayoutInflater mInflater;
-
-        public GridViewAdapter() {
-            mInflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder = null;
-            if(convertView == null){
-                convertView = mInflater.inflate(R.layout.with_grid_view_item_image_list_grid,null);
-                holder = new ViewHolder();
-                holder.img = (CubeImageView) convertView.findViewById(R.id.with_grid_view_item_image);
-                holder.img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                LinearLayout itemLayout = (LinearLayout) convertView.findViewById(R.id.item);
-                LinearLayout.LayoutParams lyp = new LinearLayout.LayoutParams(sGirdImageSize, sGirdImageSize);
-                itemLayout.setLayoutParams(lyp);
-                convertView.setTag(holder);
-            }else{
-                holder = (ViewHolder) convertView.getTag();
-            }
-            holder.img.loadImage(mImageLoader, picUrls.get(position));
-            return convertView;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return picUrls.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return picUrls.size();
-        }
-    }
+//    private class GridViewAdapter extends BaseAdapter {
+//
+//        private LayoutInflater mInflater;
+//
+//        public GridViewAdapter() {
+//            mInflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//        }
+//
+//        @Override
+//        public View getView(int position, View convertView, ViewGroup parent) {
+//            ViewHolder holder = null;
+//            if(convertView == null){
+//                convertView = mInflater.inflate(R.layout.with_grid_view_item_image_list_grid,null);
+//                holder = new ViewHolder();
+//                holder.img = (CubeImageView) convertView.findViewById(R.id.with_grid_view_item_image);
+//                holder.img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+//                LinearLayout itemLayout = (LinearLayout) convertView.findViewById(R.id.item);
+//                LinearLayout.LayoutParams lyp = new LinearLayout.LayoutParams(sGirdImageSize, sGirdImageSize);
+//                itemLayout.setLayoutParams(lyp);
+//                convertView.setTag(holder);
+//            }else{
+//                holder = (ViewHolder) convertView.getTag();
+//            }
+//            holder.img.loadImage(mImageLoader, picUrls.get(position));
+//            return convertView;
+//        }
+//
+//        @Override
+//        public long getItemId(int position) {
+//            return position;
+//        }
+//
+//        @Override
+//        public Object getItem(int position) {
+//            return picUrls.get(position);
+//        }
+//
+//        @Override
+//        public int getCount() {
+//            return picUrls.size();
+//        }
+//    }
 
 }

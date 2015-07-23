@@ -3,10 +3,7 @@ package com.qjizho.inspmarker.activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
@@ -25,9 +22,9 @@ public class MainActivity extends MintsBaseActivity {
             Bundle bundle = new Bundle();
             bundle.putString("id",cur.getString(Account.NUM_ACCOUNT_ID));
             bundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
-            FragmentGridview gridFragment = new FragmentGridview();
+            FollowsGridView gridFragment = new FollowsGridView();
             gridFragment.setArguments(bundle);
-            pushFragmentToBackStack(FragmentGridview.class, bundle);
+            pushFragmentToBackStack(FollowsGridView.class, bundle);
 //            getFragmentManager().beginTransaction().add(R.id.frag, gridFragment).commit();
         }else{
 //            getFragmentManager().beginTransaction().add(R.id.frag, new FragmentLogin()).commit();
