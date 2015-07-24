@@ -18,6 +18,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.qjizho.inspmarker.R;
+import com.qjizho.inspmarker.helper.ListPageInfoWithPosition;
 import com.qjizho.inspmarker.helper.RecentImageViewHolder;
 
 import org.apache.http.Header;
@@ -89,6 +90,10 @@ public class RecentGridView extends TitleBaseFragment{
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 CLog.d("grid-view", "onItemClick: %s %s", position, id);
+                ListPageInfoWithPosition obj = new ListPageInfoWithPosition();
+                obj.mInfos = mInfos;
+                obj.mPosition = (int)id;
+                getContext().pushFragmentToBackStack(JazzyImageView.class, obj);
             }
         });
         // header place holder
@@ -105,6 +110,7 @@ public class RecentGridView extends TitleBaseFragment{
         nAdapter = new PagedListViewDataAdapter<String>();
         nAdapter.setViewHolderClass(this, RecentImageViewHolder.class, mImageLoader);
         nAdapter.setListPageInfo(mInfos);
+        mInfos.prepareForNextPage();
         mGridView.setAdapter(nAdapter);
         loadMoreContainer.setLoadMoreHandler(new LoadMoreHandler() {
             @Override
