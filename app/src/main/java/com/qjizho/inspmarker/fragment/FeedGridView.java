@@ -18,6 +18,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.qjizho.inspmarker.R;
+import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.helper.ListPageInfoWithPosition;
 import com.qjizho.inspmarker.helper.RecentImageViewHolder;
 
@@ -51,11 +52,11 @@ public class FeedGridView extends TitleBaseFragment{
     private ImageLoader mImageLoader;
     private PtrFrameLayout ptrFrameLayout;
     GridViewAdapter mAdapter;
-    private ArrayList<String> picUrls = new ArrayList<String>();
+    private ArrayList<InsImage> picUrls = new ArrayList<InsImage>();
     private String mId ;
     private String mToken;
-    private PagedListViewDataAdapter<String> nAdapter;
-    private ListPageInfo<String> mInfos = new ListPageInfo<String>(36);
+    private PagedListViewDataAdapter<InsImage> nAdapter;
+    private ListPageInfo<InsImage> mInfos = new ListPageInfo<InsImage>(36);
     private GridViewWithHeaderAndFooter mGridView;
     private String mPagination;
     LoadMoreGridViewContainer loadMoreContainer;
@@ -107,7 +108,7 @@ public class FeedGridView extends TitleBaseFragment{
         loadMoreContainer.useDefaultHeader();
         mAdapter = new GridViewAdapter();
         // binding view and data
-        nAdapter = new PagedListViewDataAdapter<String>();
+        nAdapter = new PagedListViewDataAdapter<InsImage>();
         nAdapter.setViewHolderClass(this, RecentImageViewHolder.class, mImageLoader);
         nAdapter.setListPageInfo(mInfos);
         mInfos.prepareForNextPage();
@@ -166,19 +167,38 @@ public class FeedGridView extends TitleBaseFragment{
                     JSONArray dataArray = obj.getJSONArray("data");
                     Log.d("qiqi","Count:" + dataArray.length());
 //                            Log.d("qiqi", new String(responseBody).toString());
+                    InsImage insImage;
                     for (int i = 0; i < dataArray.length(); i++) {
-//                                JSONObject dataObj = dataArray.getJSONObject(i);
-//                                JSONObject imageObj = dataObj.getJSONObject("images");
-//                                JSONObject lowPObj = imageObj.getJSONObject("low_resolution");
+                        insImage = new InsImage();
+                        JSONObject dataObj = dataArray.getJSONObject(i);
+                        JSONObject imageObj = dataObj.getJSONObject("images");
+                        JSONObject lowPObj = imageObj.getJSONObject("low_resolution");
+                        JSONObject thumbnailPObj = imageObj.getJSONObject("thumbnail");
+                        JSONObject standardPObj = imageObj.getJSONObject("standard_resolution");
+                        insImage.mLowResolution = lowPObj.getString("url");
+                        insImage.mThumbnail = thumbnailPObj.getString("url");
+                        insImage.mStandardResolution = standardPObj.getString("url");
+                        JSONObject userObj = dataObj.getJSONObject("user");
+                        insImage.mUserName = userObj.getString("username");
+                        insImage.mUserFullName = userObj.getString("full_name");
+                        insImage.mProfilePciture = userObj.getString("profile_picture");
+                        insImage.mUserId = userObj.getString("id");
+                        JSONObject captionObj = dataObj.getJSONObject("caption");
+                        if(!captionObj.isNull("text")){
+                            insImage.mCaption = captionObj.getString("text");
+                        }else{
+                            insImage.mCaption = "";
+                        }
 //                                Log.d("qiqi",dataArray.getJSONObject(i).getString("id"));
-                        picUrls.add(dataArray.getJSONObject(i).getJSONObject("images").getJSONObject("standard_resolution").getString("url"));
-//                                JSONObject thumbnailPObj = imageObj.getJSONObject("thumbnail");
-//                                JSONObject standardPObj = imageObj.getJSONObject("standard_resolution");
+                        picUrls.add(insImage);
 
                     }
                     Log.d("qiqi", "Before, mInfos.length:" + mInfos.getListLength());
                     Log.d("qiqi", "Add count:" + picUrls.size());
                     mInfos.updateListInfo(picUrls, !mPagination.isEmpty());
+//                    for(int i = 0; i < picUrls.size(); i++){
+//                        Log.d("qiqi", "" + picUrls.get(i).mStandardResolution);
+//                    }
                     Log.d("qiqi", "Then, mInfos.length:" + mInfos.getListLength());
                 } catch (Exception e) {
                     Log.d("qiqi", "error:" + e.toString());
@@ -232,7 +252,7 @@ public class FeedGridView extends TitleBaseFragment{
             }else{
                 holder = (ViewHolder) convertView.getTag();
             }
-            holder.img.loadImage(mImageLoader, picUrls.get(position));
+            holder.img.loadImage(mImageLoader, picUrls.get(position).mStandardResolution);
             return convertView;
         }
 

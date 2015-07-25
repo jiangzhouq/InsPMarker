@@ -15,7 +15,7 @@ import in.srain.cube.views.list.ViewHolderBase;
 /**
  * Created by qjizho on 15-7-22.
  */
-public class RecentImageViewHolder extends ViewHolderBase<String>{
+public class RecentImageViewHolder extends ViewHolderBase<InsImage>{
 
     private CubeImageView mImageView;
     private ImageLoader mImageloader;
@@ -33,7 +33,7 @@ public class RecentImageViewHolder extends ViewHolderBase<String>{
     }
 
     @Override
-    public void showData(int position, String url) {
-        mImageView.loadImage(mImageloader, url, LocalDisplay.SCREEN_WIDTH_PIXELS/3);
+    public void showData(int position, InsImage insImage) {
+        mImageView.loadImage(mImageloader, insImage.mStandardResolution, LocalDisplay.SCREEN_WIDTH_PIXELS/3);
     }
 }

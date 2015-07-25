@@ -14,11 +14,13 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.qjizho.inspmarker.R;
+import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.helper.JazzyViewPager;
 import com.qjizho.inspmarker.helper.ListPageInfoWithPosition;
 import com.qjizho.inspmarker.helper.OutlineContainer;
@@ -45,10 +47,10 @@ public class JazzyImageView extends TitleBaseFragment{
     private static int sGirdImageSize = 0;
     private ImageLoader mImageLoader;
     JazzyAdapter mAdapter;
-    private ArrayList<String> picUrls = new ArrayList<String>();
+    private ArrayList<InsImage> picUrls = new ArrayList<InsImage>();
     private int mPosition ;
-    private PagedListViewDataAdapter<String> nAdapter;
-    private ListPageInfo<String> mInfos = new ListPageInfo<String>(36);
+    private PagedListViewDataAdapter<InsImage> nAdapter;
+    private ListPageInfo<InsImage> mInfos = new ListPageInfo<InsImage>(36);
     private String mPagination;
     LoadMoreGridViewContainer loadMoreContainer;
     private JazzyViewPager jazzyViewPager;
@@ -118,14 +120,30 @@ public class JazzyImageView extends TitleBaseFragment{
                     JSONArray dataArray = obj.getJSONArray("data");
                     Log.d("qiqi","Count:" + dataArray.length());
 //                            Log.d("qiqi", new String(responseBody).toString());
+                    InsImage insImage ;
                     for (int i = 0; i < dataArray.length(); i++) {
-//                                JSONObject dataObj = dataArray.getJSONObject(i);
-//                                JSONObject imageObj = dataObj.getJSONObject("images");
-//                                JSONObject lowPObj = imageObj.getJSONObject("low_resolution");
+                        insImage = new InsImage();
+                        JSONObject dataObj = dataArray.getJSONObject(i);
+                        JSONObject imageObj = dataObj.getJSONObject("images");
+                        JSONObject lowPObj = imageObj.getJSONObject("low_resolution");
+                        JSONObject thumbnailPObj = imageObj.getJSONObject("thumbnail");
+                        JSONObject standardPObj = imageObj.getJSONObject("standard_resolution");
+                        insImage.mLowResolution = lowPObj.getString("url");
+                        insImage.mThumbnail = thumbnailPObj.getString("url");
+                        insImage.mStandardResolution = standardPObj.getString("url");
+                        JSONObject userObj = dataObj.getJSONObject("user");
+                        insImage.mUserName = userObj.getString("username");
+                        insImage.mUserFullName = userObj.getString("full_name");
+                        insImage.mProfilePciture = userObj.getString("profile_picture");
+                        insImage.mUserId = userObj.getString("id");
+                        JSONObject captionObj = dataObj.getJSONObject("caption");
+                        if(!captionObj.isNull("text")){
+                            insImage.mCaption = captionObj.getString("text");
+                        }else{
+                            insImage.mCaption = "";
+                        }
 //                                Log.d("qiqi",dataArray.getJSONObject(i).getString("id"));
-                        picUrls.add(dataArray.getJSONObject(i).getJSONObject("images").getJSONObject("standard_resolution").getString("url"));
-//                                JSONObject thumbnailPObj = imageObj.getJSONObject("thumbnail");
-//                                JSONObject standardPObj = imageObj.getJSONObject("standard_resolution");
+                        picUrls.add(insImage);
 
                     }
 
@@ -168,14 +186,24 @@ public class JazzyImageView extends TitleBaseFragment{
         }
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-//            View view = mInflater.inflate(R.layout.with_grid_view_item_image_list_grid,container,false);
-//            CubeImageView cubeImageView = (CubeImageView)view.findViewById(R.id.with_grid_view_item_image);
-//            cubeImageView.loadImage(mImageLoader, mInfos.getDataList().get(position));
-            CubeImageView image = new CubeImageView(getContext());
-            image.loadImage(mImageLoader, mInfos.getDataList().get(position));
-            container.addView(image, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-            jazzyViewPager.setObjectForPosition(image, position);
-            return image;
+            View view = mInflater.inflate(R.layout.jazzy_image,null);
+            CubeImageView cubeImageView = (CubeImageView)view.findViewById(R.id.with_grid_view_item_image);
+            cubeImageView.loadImage(mImageLoader, mInfos.getDataList().get(position).mStandardResolution);
+            CubeImageView mUserProfilePic = (CubeImageView)view.findViewById(R.id.user_profile_pic);
+            mUserProfilePic.loadImage(mImageLoader, mInfos.getDataList().get(position).mProfilePciture);
+            mUserProfilePic.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v) {
+
+                }
+            });
+            TextView text = (TextView)view.findViewById(R.id.message);
+            text.setText(mInfos.getDataList().get(position).mCaption);
+//            CubeImageView image = new CubeImageView(getContext());
+//            image.loadImage(mImageLoader, mInfos.getDataList().get(position));
+            container.addView(view, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            jazzyViewPager.setObjectForPosition(view, position);
+            return view;
         }
 
         @Override
@@ -220,7 +248,7 @@ public class JazzyImageView extends TitleBaseFragment{
             }else{
                 holder = (ViewHolder) convertView.getTag();
             }
-            holder.img.loadImage(mImageLoader, picUrls.get(position));
+            holder.img.loadImage(mImageLoader, picUrls.get(position).mStandardResolution);
             return convertView;
         }
 
