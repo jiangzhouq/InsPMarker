@@ -1,6 +1,7 @@
 package com.qjizho.inspmarker.fragment;
 
 import android.content.Context;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -62,6 +64,11 @@ public class RecentGridView extends TitleBaseFragment{
     private GridViewWithHeaderAndFooter mGridView;
     private String mPagination;
     LoadMoreGridViewContainer loadMoreContainer;
+
+    private CubeImageView mHeaderProfilePic;
+    private TextView mHeaderName;
+    private TextView mHeaderFullName;
+    private TextView mHeaderBio;
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle) {
 
@@ -100,8 +107,12 @@ public class RecentGridView extends TitleBaseFragment{
             }
         });
         // header place holder
-        View headerMarginView = new View(getActivity());
-        headerMarginView.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, LocalDisplay.dp2px(20)));
+        View headerMarginView = inflater.inflate(R.layout.user_profile_header_layout, null);
+        headerMarginView.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, LocalDisplay.dp2px(100)));
+        mHeaderProfilePic = (CubeImageView)headerMarginView.findViewById(R.id.header_profile_pic);
+        mHeaderName = (TextView)headerMarginView.findViewById(R.id.header_name);
+        mHeaderFullName = (TextView)headerMarginView.findViewById(R.id.header_full_name);
+        mHeaderBio = (TextView)headerMarginView.findViewById(R.id.bio);
         mGridView.addHeaderView(headerMarginView);
 
         // load more container
@@ -149,30 +160,61 @@ public class RecentGridView extends TitleBaseFragment{
 
         picUrls.clear();
         AsyncHttpClient client = new AsyncHttpClient();
-        String str = "https://api.instagram.com/v1/users/%s/media/recent";
-        str = String.format(str, mId);
+        String URL_MEDIA = "https://api.instagram.com/v1/users/%s/media/recent";
+        String URL_USER = "https://api.instagram.com/v1/users/%s";
         RequestParams params = new RequestParams();
         if(url.isEmpty()){
-            url = str;
+            url = String.format(URL_MEDIA, mId);
             params.add("access_token", mToken);
-        }
+            Log.d("qiqi", "request user info:" + String.format(URL_USER, mId));
+            client.get(String.format(URL_USER, mId), params, new AsyncHttpResponseHandler() {
+                        @Override
+                        public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                                try {
+                                    JSONObject obj = new JSONObject(new String(responseBody));
+                                    JSONObject dataObj = obj.getJSONObject("data");
+                                    Log.d("qiqi", dataObj.toString());
+                                    mHeaderBio.setText(dataObj.getString("bio"));
+                                    mHeaderName.setText(dataObj.getString("username"));
+                                    mHeaderFullName.setText(dataObj.getString("full_name"));
+//                                    if(mHeaderProfilePic == null){
+//                                        Log.d("qiqi", "mHeaderProfilePic == null");
+//                                    }
+//                                    if(mImageLoader == null){
+//                                        Log.d("qiqi", "mImageLoader == null");
+//                                    }
+                                    mHeaderProfilePic.loadImage(mImageLoader, dataObj.getString("profile_picture"));
+                                }catch (Exception e){
+                                    Log.d("qiqi", e.toString());
+                                }
+
+                            }
+
+                            @Override
+                            public void onFailure ( int statusCode, Header[] headers, byte[] responseBody, Throwable error){
+
+                            }
+                        }
+
+                        );
+                    }
 //        params.add("count", String.valueOf(Utils.mRefreshCount));
-        Log.d("qiqi", "request url:" + url);
+                    Log.d("qiqi", "request url:" + url);
         client.get(url, params, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 Log.d("qiqi", "code:" + statusCode);
                 try {
                     JSONObject obj = new JSONObject(new String(responseBody));
-                    Log.d("qiqi","obj:"+obj.toString());
+                    Log.d("qiqi", "obj:" + obj.toString());
                     JSONObject pObj = obj.getJSONObject("pagination");
-                    mPagination = pObj.isNull("next_url") ? "":pObj.getString("next_url");
-                    Log.d("qiqi","mPagination:"+mPagination);
+                    mPagination = pObj.isNull("next_url") ? "" : pObj.getString("next_url");
+                    Log.d("qiqi", "mPagination:" + mPagination);
                     JSONArray dataArray = obj.getJSONArray("data");
-                    Log.d("qiqi","Count:" + dataArray.length());
+                    Log.d("qiqi", "Count:" + dataArray.length());
 //                            Log.d("qiqi", new String(responseBody).toString());
                     InsImage insImage;
-                    Log.d("qiqi,", "data count:" + dataArray.length() );
+                    Log.d("qiqi,", "data count:" + dataArray.length());
                     for (int i = 0; i < dataArray.length(); i++) {
                         insImage = new InsImage();
                         JSONObject dataObj = dataArray.getJSONObject(i);
@@ -188,11 +230,11 @@ public class RecentGridView extends TitleBaseFragment{
                         insImage.mUserFullName = userObj.getString("full_name");
                         insImage.mProfilePciture = userObj.getString("profile_picture");
                         insImage.mUserId = userObj.getString("id");
-                        if(!dataObj.isNull("caption")){
+                        if (!dataObj.isNull("caption")) {
                             JSONObject captionObj = dataObj.getJSONObject("caption");
-                            if(!captionObj.isNull("text")){
+                            if (!captionObj.isNull("text")) {
                                 insImage.mCaption = captionObj.getString("text");
-                            }else{
+                            } else {
                                 insImage.mCaption = "";
                             }
                         }
@@ -212,7 +254,7 @@ public class RecentGridView extends TitleBaseFragment{
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.d("qiqi","statusCode:" + statusCode);
+                Log.d("qiqi", "statusCode:" + statusCode);
             }
         });
     }
