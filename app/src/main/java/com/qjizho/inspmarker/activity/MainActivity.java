@@ -1,6 +1,7 @@
 package com.qjizho.inspmarker.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +20,13 @@ public class MainActivity extends MintsBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//        SharedPreferences shared = getSharedPreferences("setting", 0);
+//        String sToken = shared.getString("cToken", "");
+//        if(sToken.isEmpty()){
+//
+//        }
+//        SharedPreferences.Editor editor = shared.edit();
+
         Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
         if(cur.getCount() > 0){
             cur.moveToFirst();

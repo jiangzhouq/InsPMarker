@@ -1,6 +1,7 @@
 package com.qjizho.inspmarker.fragment;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,10 +21,12 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.qjizho.inspmarker.R;
+import com.qjizho.inspmarker.db.Account;
 import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.helper.JazzyViewPager;
 import com.qjizho.inspmarker.helper.ListPageInfoWithPosition;
 import com.qjizho.inspmarker.helper.OutlineContainer;
+import com.qjizho.inspmarker.helper.Utils;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -106,6 +109,7 @@ public class JazzyImageView extends TitleBaseFragment{
         picUrls.clear();
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
+        params.add("count", String.valueOf(Utils.mRefreshCount));
         client.get(url, params, new AsyncHttpResponseHandler() {
 
             @Override
@@ -121,6 +125,7 @@ public class JazzyImageView extends TitleBaseFragment{
                     Log.d("qiqi","Count:" + dataArray.length());
 //                            Log.d("qiqi", new String(responseBody).toString());
                     InsImage insImage ;
+                    Log.d("qiqi,", "data count:" + dataArray.length() );
                     for (int i = 0; i < dataArray.length(); i++) {
                         insImage = new InsImage();
                         JSONObject dataObj = dataArray.getJSONObject(i);
@@ -187,7 +192,7 @@ public class JazzyImageView extends TitleBaseFragment{
             mInflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
         @Override
-        public Object instantiateItem(ViewGroup container, int position) {
+        public Object instantiateItem(ViewGroup container, final int position) {
             View view = mInflater.inflate(R.layout.jazzy_image,null);
             CubeImageView cubeImageView = (CubeImageView)view.findViewById(R.id.with_grid_view_item_image);
             cubeImageView.loadImage(mImageLoader, mInfos.getDataList().get(position).mStandardResolution);
@@ -196,7 +201,15 @@ public class JazzyImageView extends TitleBaseFragment{
             mUserProfilePic.setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v) {
-
+                    final int mPos = position;
+                    Cursor cur = getContext().getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
+                    if(cur.getCount() > 0){
+                        cur.moveToFirst();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("id",mInfos.getDataList().get(mPos).mUserId);
+                        bundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
+                        getContext().pushFragmentToBackStack(RecentGridView.class, bundle);
+                    }
                 }
             });
             TextView text = (TextView)view.findViewById(R.id.message);

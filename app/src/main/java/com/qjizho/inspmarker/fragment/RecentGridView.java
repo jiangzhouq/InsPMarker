@@ -21,6 +21,8 @@ import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.helper.ListPageInfoWithPosition;
 import com.qjizho.inspmarker.helper.RecentImageViewHolder;
+import com.qjizho.inspmarker.helper.Util;
+import com.qjizho.inspmarker.helper.Utils;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -152,9 +154,9 @@ public class RecentGridView extends TitleBaseFragment{
         RequestParams params = new RequestParams();
         if(url.isEmpty()){
             url = str;
-            params.add("count", "36");
             params.add("access_token", mToken);
         }
+//        params.add("count", String.valueOf(Utils.mRefreshCount));
         Log.d("qiqi", "request url:" + url);
         client.get(url, params, new AsyncHttpResponseHandler() {
             @Override
@@ -170,6 +172,7 @@ public class RecentGridView extends TitleBaseFragment{
                     Log.d("qiqi","Count:" + dataArray.length());
 //                            Log.d("qiqi", new String(responseBody).toString());
                     InsImage insImage;
+                    Log.d("qiqi,", "data count:" + dataArray.length() );
                     for (int i = 0; i < dataArray.length(); i++) {
                         insImage = new InsImage();
                         JSONObject dataObj = dataArray.getJSONObject(i);

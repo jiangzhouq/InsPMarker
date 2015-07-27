@@ -21,6 +21,8 @@ import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.helper.ListPageInfoWithPosition;
 import com.qjizho.inspmarker.helper.RecentImageViewHolder;
+import com.qjizho.inspmarker.helper.Util;
+import com.qjizho.inspmarker.helper.Utils;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -154,6 +156,7 @@ public class FeedGridView extends TitleBaseFragment{
             params.add("access_token", mToken);
         }
         Log.d("qiqi", "request url:" + url);
+        params.add("count", String.valueOf(Utils.mRefreshCount));
         client.get(url, params, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
@@ -168,6 +171,7 @@ public class FeedGridView extends TitleBaseFragment{
                     Log.d("qiqi","Count:" + dataArray.length());
 //                            Log.d("qiqi", new String(responseBody).toString());
                     InsImage insImage;
+                    Log.d("qiqi,", "data count:" + dataArray.length() );
                     for (int i = 0; i < dataArray.length(); i++) {
                         insImage = new InsImage();
                         JSONObject dataObj = dataArray.getJSONObject(i);
