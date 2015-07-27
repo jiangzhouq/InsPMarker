@@ -183,11 +183,13 @@ public class FeedGridView extends TitleBaseFragment{
                         insImage.mUserFullName = userObj.getString("full_name");
                         insImage.mProfilePciture = userObj.getString("profile_picture");
                         insImage.mUserId = userObj.getString("id");
-                        JSONObject captionObj = dataObj.getJSONObject("caption");
-                        if(!captionObj.isNull("text")){
-                            insImage.mCaption = captionObj.getString("text");
-                        }else{
-                            insImage.mCaption = "";
+                        if(!dataObj.isNull("caption")){
+                            JSONObject captionObj = dataObj.getJSONObject("caption");
+                            if(!captionObj.isNull("text")){
+                                insImage.mCaption = captionObj.getString("text");
+                            }else{
+                                insImage.mCaption = "";
+                            }
                         }
 //                                Log.d("qiqi",dataArray.getJSONObject(i).getString("id"));
                         picUrls.add(insImage);
