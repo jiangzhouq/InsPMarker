@@ -1,7 +1,6 @@
 package com.qjizho.inspmarker.fragment;
 
 import android.content.Context;
-import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -23,8 +22,6 @@ import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.helper.ListPageInfoWithPosition;
 import com.qjizho.inspmarker.helper.RecentImageViewHolder;
-import com.qjizho.inspmarker.helper.Util;
-import com.qjizho.inspmarker.helper.Utils;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -36,7 +33,6 @@ import in.srain.cube.image.CubeImageView;
 import in.srain.cube.image.ImageLoader;
 import in.srain.cube.image.ImageLoaderFactory;
 import in.srain.cube.mints.base.TitleBaseFragment;
-import in.srain.cube.util.CLog;
 import in.srain.cube.util.LocalDisplay;
 import in.srain.cube.views.GridViewWithHeaderAndFooter;
 import in.srain.cube.views.list.ListPageInfo;
@@ -96,14 +92,16 @@ public class RecentGridView extends TitleBaseFragment{
             }
         });
         mGridView = (GridViewWithHeaderAndFooter) view.findViewById(R.id.load_more_grid_view);
-        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mGridView.setOnItemClickListener(
+                new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                CLog.d("grid-view", "onItemClick: %s %s", position, id);
+                Log.d("qiqi", "position :" + position + " clicked!");
                 ListPageInfoWithPosition obj = new ListPageInfoWithPosition();
                 obj.mInfos = mInfos;
                 obj.mPosition = (int)id;
-                getContext().pushFragmentToBackStack(JazzyImageView.class, obj);
+                obj.mPagination = mPagination;
+                getContext().pushFragmentToBackStack(JazzyImageViewForRecent.class, obj);
             }
         });
         // header place holder

@@ -46,7 +46,7 @@ import in.srain.cube.views.loadmore.LoadMoreGridViewContainer;
 /**
  * Created by qjizho on 15-7-13.
  */
-public class JazzyImageView extends TitleBaseFragment{
+public class JazzyImageViewForFeed extends TitleBaseFragment{
     private static int sGirdImageSize = 0;
     private ImageLoader mImageLoader;
     JazzyAdapter mAdapter;
