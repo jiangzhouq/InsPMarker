@@ -83,6 +83,10 @@ public class RecentGridView extends TitleBaseFragment{
         ptrFrameLayout.setPtrHandler(new PtrHandler() {
             @Override
             public void onRefreshBegin(PtrFrameLayout frame) {
+
+                if(mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()){
+                    mInfos.getDataList().clear();
+                }
                 startRequest("");
             }
 

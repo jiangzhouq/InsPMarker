@@ -78,6 +78,9 @@ public class FeedGridView extends TitleBaseFragment{
         ptrFrameLayout.setPtrHandler(new PtrHandler() {
             @Override
             public void onRefreshBegin(PtrFrameLayout frame) {
+                if(mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()){
+                    mInfos.getDataList().clear();
+                }
                 startRequest("");
             }
 
@@ -152,9 +155,6 @@ public class FeedGridView extends TitleBaseFragment{
         if(url.isEmpty()){
             url = str;
             params.add("access_token", mToken);
-            if(mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()){
-                mInfos.getDataList().clear();
-            }
         }
         Log.d("qiqi", "request url:" + url);
         params.add("count", String.valueOf(Utils.mRefreshCount));
