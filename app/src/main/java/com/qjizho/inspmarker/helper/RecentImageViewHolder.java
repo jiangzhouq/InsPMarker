@@ -34,6 +34,6 @@ public class RecentImageViewHolder extends ViewHolderBase<InsImage>{
 
     @Override
     public void showData(int position, InsImage insImage) {
-        mImageView.loadImage(mImageloader, insImage.mLowResolution, LocalDisplay.SCREEN_WIDTH_PIXELS/3);
+        mImageView.loadImage(mImageloader, insImage.mThumbnail, LocalDisplay.SCREEN_WIDTH_PIXELS/3);
     }
 }

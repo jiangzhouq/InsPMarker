@@ -152,6 +152,9 @@ public class FeedGridView extends TitleBaseFragment{
         if(url.isEmpty()){
             url = str;
             params.add("access_token", mToken);
+            if(mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()){
+                mInfos.getDataList().clear();
+            }
         }
         Log.d("qiqi", "request url:" + url);
         params.add("count", String.valueOf(Utils.mRefreshCount));
