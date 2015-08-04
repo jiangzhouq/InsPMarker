@@ -34,6 +34,10 @@ public class RecentImageViewHolder extends ViewHolderBase<InsImage>{
 
     @Override
     public void showData(int position, InsImage insImage) {
-        mImageView.loadImage(mImageloader, insImage.mThumbnail, LocalDisplay.SCREEN_WIDTH_PIXELS/3);
+        if(insImage.mLowResolution.equals("12321")){
+            mImageView.loadImage(mImageloader, "http://jiangzhoumigs-jiangzhoumigs.stor.sinaapp.com/original/download.png", LocalDisplay.SCREEN_WIDTH_PIXELS/3);
+        }else{
+            mImageView.loadImage(mImageloader, insImage.mThumbnail, LocalDisplay.SCREEN_WIDTH_PIXELS/3);
+        }
     }
 }

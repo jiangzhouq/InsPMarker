@@ -120,7 +120,7 @@ public class RecentGridView extends TitleBaseFragment{
         // load more container
         loadMoreContainer = (LoadMoreGridViewContainer) view.findViewById(R.id.load_more_grid_view_container);
         loadMoreContainer.setAutoLoadMore(true);
-        loadMoreContainer.useDefaultHeader();
+//        loadMoreContainer.useDefaultHeader();
         mAdapter = new GridViewAdapter();
         // binding view and data
         nAdapter = new PagedListViewDataAdapter<InsImage>();
@@ -244,8 +244,16 @@ public class RecentGridView extends TitleBaseFragment{
                         picUrls.add(insImage);
 
                     }
+                    InsImage loadMoreInsImage = new InsImage();
+                    loadMoreInsImage.mStandardResolution = "12321";
+                    loadMoreInsImage.mLowResolution = "12321";
+                    loadMoreInsImage.mThumbnail = "12321";
+                    picUrls.add(loadMoreInsImage);
                     Log.d("qiqi", "Before, mInfos.length:" + mInfos.getListLength());
                     Log.d("qiqi", "Add count:" + picUrls.size());
+                    if(mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()){
+                        mInfos.getDataList().remove(mInfos.getListLength() -1);
+                        }
                     mInfos.updateListInfo(picUrls, !mPagination.isEmpty());
                     Log.d("qiqi", "Then, mInfos.length:" + mInfos.getListLength());
                 } catch (Exception e) {

@@ -1,6 +1,8 @@
 package com.qjizho.inspmarker.fragment;
 
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -27,6 +30,7 @@ import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import in.srain.cube.image.CubeImageView;
@@ -40,6 +44,7 @@ import in.srain.cube.views.list.PagedListViewDataAdapter;
 import in.srain.cube.views.loadmore.LoadMoreContainer;
 import in.srain.cube.views.loadmore.LoadMoreGridViewContainer;
 import in.srain.cube.views.loadmore.LoadMoreHandler;
+import in.srain.cube.views.loadmore.LoadMoreUIHandler;
 import in.srain.cube.views.ptr.PtrDefaultHandler;
 import in.srain.cube.views.ptr.PtrFrameLayout;
 import in.srain.cube.views.ptr.PtrHandler;
@@ -80,6 +85,7 @@ public class FeedGridView extends TitleBaseFragment{
             public void onRefreshBegin(PtrFrameLayout frame) {
                 if(mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()){
                     mInfos.getDataList().clear();
+//                    nAdapter.notifyDataSetChanged();
                 }
                 startRequest("");
             }
@@ -107,8 +113,19 @@ public class FeedGridView extends TitleBaseFragment{
 
         // load more container
         loadMoreContainer = (LoadMoreGridViewContainer) view.findViewById(R.id.load_more_grid_view_container);
+        /*
+        Custom the footview- loadmore view
+         */
+//        ISLoadMoreFooterView footerView = new ISLoadMoreFooterView(loadMoreContainer.getContext());
+//
+//        AbsListView.LayoutParams lp = new AbsListView.LayoutParams(-2, LocalDisplay.dp2px(80));
+//        footerView.setLayoutParams(lp);
+//
+//        loadMoreContainer.setLoadMoreView(footerView);
+//        loadMoreContainer.setLoadMoreUIHandler(footerView);
+
         loadMoreContainer.setAutoLoadMore(true);
-        loadMoreContainer.useDefaultHeader();
+//        loadMoreContainer.useDefaultHeader();
         mAdapter = new GridViewAdapter();
         // binding view and data
         nAdapter = new PagedListViewDataAdapter<InsImage>();
@@ -127,6 +144,7 @@ public class FeedGridView extends TitleBaseFragment{
             }
         });
         loadMoreContainer.loadMoreFinish(false, true);
+
         // the following are default settings
 //        mPtrFrame.setResistance(1.7f);
 //        mPtrFrame.setRatioOfHeaderHeightToRefresh(1.2f);
@@ -146,6 +164,31 @@ public class FeedGridView extends TitleBaseFragment{
         return view;
     }
 
+    public class ISLoadMoreFooterView extends RelativeLayout implements LoadMoreUIHandler {
+
+        public ISLoadMoreFooterView(Context context){
+            super(context);
+        }
+        @Override
+        public void onLoading(LoadMoreContainer loadMoreContainer) {
+
+        }
+
+        @Override
+        public void onLoadFinish(LoadMoreContainer loadMoreContainer, boolean b, boolean b1) {
+
+        }
+
+        @Override
+        public void onWaitToLoadMore(LoadMoreContainer loadMoreContainer) {
+
+        }
+
+        @Override
+        public void onLoadError(LoadMoreContainer loadMoreContainer, int i, String s) {
+
+        }
+    }
     private void startRequest(String url){
 
         picUrls.clear();
@@ -200,8 +243,16 @@ public class FeedGridView extends TitleBaseFragment{
                         picUrls.add(insImage);
 
                     }
+                    InsImage loadMoreInsImage = new InsImage();
+                    loadMoreInsImage.mStandardResolution = "12321";
+                    loadMoreInsImage.mLowResolution = "12321";
+                    loadMoreInsImage.mThumbnail = "12321";
+                    picUrls.add(loadMoreInsImage);
                     Log.d("qiqi", "Before, mInfos.length:" + mInfos.getListLength());
                     Log.d("qiqi", "Add count:" + picUrls.size());
+                    if(mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()){
+                        mInfos.getDataList().remove(mInfos.getListLength() -1);
+                    }
                     mInfos.updateListInfo(picUrls, !mPagination.isEmpty());
 //                    for(int i = 0; i < picUrls.size(); i++){
 //                        Log.d("qiqi", "" + picUrls.get(i).mStandardResolution);
