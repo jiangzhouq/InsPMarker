@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceActivity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -14,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -194,6 +196,8 @@ public class JazzyImageViewForRecent extends MyTitleBaseFragment{
         public Object instantiateItem(ViewGroup container, final int position) {
             View view = mInflater.inflate(R.layout.jazzy_image,null);
             CubeImageView cubeImageView = (CubeImageView)view.findViewById(R.id.with_grid_view_item_image);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LocalDisplay.SCREEN_WIDTH_PIXELS,LocalDisplay.SCREEN_WIDTH_PIXELS);
+            cubeImageView.setLayoutParams(lp);
             cubeImageView.loadImage(mImageLoader, mInfos.getDataList().get(position).mStandardResolution);
             CubeImageView mUserProfilePic = (CubeImageView)view.findViewById(R.id.user_profile_pic);
             mUserProfilePic.loadImage(mImageLoader, mInfos.getDataList().get(position).mProfilePciture);
