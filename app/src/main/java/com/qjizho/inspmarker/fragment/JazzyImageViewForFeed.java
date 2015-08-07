@@ -47,7 +47,7 @@ import in.srain.cube.views.loadmore.LoadMoreGridViewContainer;
 /**
  * Created by qjizho on 15-7-13.
  */
-public class JazzyImageViewForFeed extends TitleBaseFragment{
+public class JazzyImageViewForFeed extends MyTitleBaseFragment{
     private static int sGirdImageSize = 0;
     private ImageLoader mImageLoader;
     JazzyAdapter mAdapter;
@@ -60,7 +60,7 @@ public class JazzyImageViewForFeed extends TitleBaseFragment{
     private JazzyViewPager jazzyViewPager;
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle) {
-
+        super.createView(inflater, viewGroup, bundle);
         final View view = inflater.inflate(R.layout.fragment_jazzy, null);
         LocalDisplay.init(getActivity());
         ListPageInfoWithPosition obj = (ListPageInfoWithPosition)mDataIn;

@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
 import com.qjizho.inspmarker.fragment.FeedGridView;
@@ -26,7 +28,6 @@ public class MainActivity extends MintsBaseActivity {
 //
 //        }
 //        SharedPreferences.Editor editor = shared.edit();
-
         Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
         if(cur.getCount() > 0){
             cur.moveToFirst();
@@ -41,7 +42,6 @@ public class MainActivity extends MintsBaseActivity {
 //            getFragmentManager().beginTransaction().add(R.id.frag, new FragmentLogin()).commit();
             pushFragmentToBackStack(FragmentLogin.class,null);
         }
-
     }
 
     @Override
@@ -53,5 +53,10 @@ public class MainActivity extends MintsBaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d("qiqi","activity onActivityResult");
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected String getCloseWarning() {
+        return "Tap again!";
     }
 }

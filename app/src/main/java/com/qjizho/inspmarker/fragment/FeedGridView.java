@@ -33,6 +33,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.ArrayList;
 
+import in.srain.cube.app.CubeFragment;
 import in.srain.cube.image.CubeImageView;
 import in.srain.cube.image.ImageLoader;
 import in.srain.cube.image.ImageLoaderFactory;
@@ -52,7 +53,7 @@ import in.srain.cube.views.ptr.PtrHandler;
 /**
  * Created by qjizho on 15-7-13.
  */
-public class FeedGridView extends TitleBaseFragment{
+public class FeedGridView extends MyTitleBaseFragment{
     private static int sGirdImageSize = 0;
     private ImageLoader mImageLoader;
     private PtrFrameLayout ptrFrameLayout;
@@ -68,6 +69,7 @@ public class FeedGridView extends TitleBaseFragment{
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle) {
 
+        super.createView(inflater, viewGroup, bundle);
         final View view = inflater.inflate(R.layout.fragment_gridview, null);
         LocalDisplay.init(getActivity());
         mId = ((Bundle)mDataIn).getString("id");

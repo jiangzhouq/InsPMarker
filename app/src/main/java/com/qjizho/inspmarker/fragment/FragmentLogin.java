@@ -21,11 +21,12 @@ import in.srain.cube.mints.base.TitleBaseFragment;
 /**
  * Created by qjizho on 15-7-13.
  */
-public class FragmentLogin extends TitleBaseFragment {
+public class FragmentLogin extends MyTitleBaseFragment {
 
 
     @Override
     protected View createView(LayoutInflater layoutInflater, ViewGroup viewGroup, Bundle bundle) {
+        super.createView(layoutInflater, viewGroup, bundle);
         setHeaderTitle("Dot View Demo");
         final View view = layoutInflater.inflate(R.layout.fragment_login,null);
         Button btn = (Button) view.findViewById(R.id.login);
