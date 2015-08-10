@@ -24,10 +24,9 @@
                 android:horizontalSpacing="0dp"
                 android:listSelector="@android:color/transparent"
                 android:numColumns="3"
-                android:paddingLeft="0dp"
-                android:paddingRight="0dp"
+                android:padding="0dp"
                 android:scrollbarStyle="outsideOverlay"
-                android:stretchMode="columnWidth" />
+                android:stretchMode="columnWidth"/>
 
         </in.srain.cube.views.loadmore.LoadMoreGridViewContainer>
     </in.srain.cube.views.ptr.PtrClassicFrameLayout>

@@ -1,12 +1,18 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.qjizho.inspmarker.activity.MainActivity">
+    tools:context="com.qjizho.inspmarker.activity.MainActivity"
+    android:orientation="vertical">
+    <Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#008080">
+    </Toolbar>
     <FrameLayout
         android:id="@+id/frag"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     </FrameLayout>
 
-</RelativeLayout>
+</LinearLayout>

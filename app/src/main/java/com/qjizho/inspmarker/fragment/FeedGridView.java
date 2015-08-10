@@ -109,9 +109,9 @@ public class FeedGridView extends MyTitleBaseFragment{
             }
         });
         // header place holder
-        View headerMarginView = new View(getActivity());
-        headerMarginView.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, LocalDisplay.dp2px(20)));
-        mGridView.addHeaderView(headerMarginView);
+//        View headerMarginView = new View(getActivity());
+//        headerMarginView.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, LocalDisplay.dp2px(20)));
+//        mGridView.addHeaderView(headerMarginView);
 
         // load more container
         loadMoreContainer = (LoadMoreGridViewContainer) view.findViewById(R.id.load_more_grid_view_container);
