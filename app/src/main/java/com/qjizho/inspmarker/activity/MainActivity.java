@@ -92,9 +92,9 @@ public class MainActivity extends MintsBaseActivity {
                 .withAccountHeader(headerResult) //set the AccountHeader we created earlier for the header
                 .addDrawerItems(
                         new PrimaryDrawerItem().withName(R.string.menu_home_feed).withIcon(FontAwesome.Icon.faw_home).withIdentifier(1).withCheckable(false),
-                        new PrimaryDrawerItem().withName(R.string.menu_posts).withIcon(FontAwesome.Icon.faw_pagelines).withIdentifier(2).withCheckable(false),
+                        new PrimaryDrawerItem().withName(R.string.menu_posts).withIcon(FontAwesome.Icon.faw_file).withIdentifier(2).withCheckable(false),
                         new PrimaryDrawerItem().withName(R.string.menu_following).withIcon(FontAwesome.Icon.faw_eye).withIdentifier(3).withCheckable(false),
-                        new PrimaryDrawerItem().withName(R.string.menu_followers).withIcon(FontAwesome.Icon.faw_stack_overflow).withIdentifier(4).withCheckable(false),
+                        new PrimaryDrawerItem().withName(R.string.menu_followers).withIcon(FontAwesome.Icon.faw_user).withIdentifier(4).withCheckable(false),
                         new PrimaryDrawerItem().withName(R.string.menu_liked_post).withIcon(FontAwesome.Icon.faw_star).withIdentifier(5).withCheckable(false)
 //                        new PrimaryDrawerItem().withName(R.string.drawer_item_simple_fragment_drawer).withIcon(GoogleMaterial.Icon.gmd_style).withIdentifier(6).withCheckable(false),
 //                        new PrimaryDrawerItem().withName(R.string.drawer_item_embedded_drawer_dualpane).withIcon(GoogleMaterial.Icon.gmd_battery_charging_full).withIdentifier(7).withCheckable(false),
