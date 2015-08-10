@@ -1,5 +1,6 @@
 package com.qjizho.inspmarker.activity;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -27,6 +28,8 @@ import com.mikepenz.materialdrawer.model.SwitchDrawerItem;
 import com.mikepenz.materialdrawer.model.ToggleDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
+import com.nomad.instagramlogin.InstaLogin;
+import com.nomad.instagramlogin.Keys;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
 import com.qjizho.inspmarker.fragment.FeedGridView;
@@ -72,7 +75,13 @@ public class MainActivity extends MintsBaseActivity {
                         //sample usage of the onProfileChanged listener
                         //if the clicked item has the identifier 1 add a new profile ;)
                         if (profile instanceof IDrawerItem && ((IDrawerItem) profile).getIdentifier() == PROFILE_SETTING) {
-                            pushFragmentToBackStack(FragmentLogin.class,null);
+                            InstaLogin instaLogin = new InstaLogin(MainActivity.this,
+                                    "c4d946f3dc8a43699aeb7c57b5cbc12d",
+                                    "6aba840c8c984aadbae55bad66c5eab3",
+                                    "https://loggedinbaby");
+
+                            instaLogin.login();
+//                            pushFragmentToBackStack(FragmentLogin.class,null);
 //                            IProfile newProfile = new ProfileDrawerItem().withNameShown(true).withName("Batman").withEmail("batman@gmail.com").withIcon(getResources().getDrawable(R.mipmap.ic_launcher));
 //                            if (headerResult.getProfiles() != null) {
 //                                //we know that there are 2 setting elements. set the new profile above them ;)
@@ -159,8 +168,45 @@ public class MainActivity extends MintsBaseActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("qiqi","activity onActivityResult");
-        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Keys.LOGIN_REQ) {
+            // Make sure the request was successful
+            if (resultCode == this.RESULT_OK) {
+                Bundle bundle = data.getExtras();
+                if (!bundle.getString(InstaLogin.ACCESS_TOKEN).isEmpty()) {
+//                    Log.d("qiqi", "" + data.getExtras().getString(InstaLogin.FULLNAME));
+                    insertAccount(bundle);
+                    Bundle fgBundle = new Bundle();
+                    fgBundle.putString("id", bundle.getString(InstaLogin.ID));
+                    fgBundle.putString("token", bundle.getString(InstaLogin.ACCESS_TOKEN));
+
+//                    FollowsGridView gridFragment = new FollowsGridView();
+//                    gridFragment.setArguments(fgBundle);
+                    Log.d("qiqi", "start gridview with id :" + bundle.getString(InstaLogin.ID) + " token:" + bundle.getString(InstaLogin.ACCESS_TOKEN));
+                    pushFragmentToBackStack(FeedGridView.class, fgBundle);
+//                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, gridFragment).commit();
+                }
+            }
+        }
+    }
+    private void insertAccount(Bundle bundle){
+        ContentValues value = new ContentValues();
+        value.put(Account.COLUMN_ACCOUNT_ID, bundle.getString(InstaLogin.ID));
+        value.put(Account.COLUMN_USERNAME, bundle.getString(InstaLogin.USERNAME));
+        value.put(Account.COLUMN_FULL_NAME, bundle.getString(InstaLogin.FULLNAME));
+        value.put(Account.COLUMN_BIO, bundle.getString(InstaLogin.BIO));
+        value.put(Account.COLUMN_PROFILE_PICTURE, bundle.getString(InstaLogin.PROFILE_PIC));
+        value.put(Account.COLUMN_ACCESS_TOKEN, bundle.getString(InstaLogin.ACCESS_TOKEN));
+        value.put(Account.COLUMN_ACTIVED, 1);
+        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS, null, "account_id=" + bundle.getString(InstaLogin.ID), null, null);
+        if(cur.getCount() > 0){
+            Log.d("qiqi", " already in:" + bundle.getString(InstaLogin.ID));
+        }else{
+            ContentValues noActived = new ContentValues();
+            noActived.put(Account.COLUMN_ACTIVED, 0);
+            getContentResolver().update(Account.CONTENT_URI_ACCOUNTS, noActived, "actived=1", null);
+            Uri uri = getContentResolver().insert(Account.CONTENT_URI_ACCOUNTS, value);
+            Log.d("qiqi", uri.toString());
+        }
     }
 
     @Override

@@ -15,7 +15,7 @@ public class InstaLogin {
     private String CLIENT_ID = "https://api.instagram.com/oauth/authorize";
     private String CLIENT_SECRET = "https://api.instagram.com/oauth/access_token";
     private String CALLBACKURL = "";
-    private TitleBaseFragment context;
+    private Activity context;
 
     public final static String USERNAME="user_name";
     public final static String FULLNAME="full_name";
@@ -24,7 +24,7 @@ public class InstaLogin {
     public final static String ID="id";
     public final static String BIO="bio";
 
-    public InstaLogin(TitleBaseFragment context, String CLIENT_ID, String CLIENT_SECRET, String CALLBACKURL) {
+    public InstaLogin(Activity context, String CLIENT_ID, String CLIENT_SECRET, String CALLBACKURL) {
         this.CLIENT_ID = CLIENT_ID;
         this.CLIENT_SECRET = CLIENT_SECRET;
         this.CALLBACKURL = CALLBACKURL;
@@ -32,7 +32,7 @@ public class InstaLogin {
     }
 
     public void login() {
-        Intent intent = new Intent(context.getActivity(), Loginactivity.class);
+        Intent intent = new Intent(context, Loginactivity.class);
         Bundle bundle = new Bundle();
         bundle.putString(Keys.CLIENT_ID_KEY, CLIENT_ID);
         bundle.putString(Keys.CLIENT_SECRET_KEY, CLIENT_SECRET);

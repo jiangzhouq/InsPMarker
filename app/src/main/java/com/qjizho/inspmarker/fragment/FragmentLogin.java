@@ -34,12 +34,12 @@ public class FragmentLogin extends MyTitleBaseFragment {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                InstaLogin instaLogin = new InstaLogin(FragmentLogin.this,
-                        "c4d946f3dc8a43699aeb7c57b5cbc12d",
-                        "6aba840c8c984aadbae55bad66c5eab3",
-                        "https://loggedinbaby");
+//                InstaLogin instaLogin = new InstaLogin(FragmentLogin.this,
+//                        "c4d946f3dc8a43699aeb7c57b5cbc12d",
+//                        "6aba840c8c984aadbae55bad66c5eab3",
+//                        "https://loggedinbaby");
 
-                instaLogin.login();
+//                instaLogin.login();
             }
         });
         return view;
