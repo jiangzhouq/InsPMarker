@@ -74,6 +74,7 @@ public class FragmentLogin extends MyTitleBaseFragment {
         value.put(Account.COLUMN_USERNAME, bundle.getString(InstaLogin.USERNAME));
         value.put(Account.COLUMN_FULL_NAME, bundle.getString(InstaLogin.FULLNAME));
         value.put(Account.COLUMN_BIO, bundle.getString(InstaLogin.BIO));
+        value.put(Account.COLUMN_PROFILE_PICTURE, bundle.getString(InstaLogin.PROFILE_PIC));
         value.put(Account.COLUMN_ACCESS_TOKEN, bundle.getString(InstaLogin.ACCESS_TOKEN));
         value.put(Account.COLUMN_ACTIVED, 1);
         Cursor cur = getActivity().getContentResolver().query(Account.CONTENT_URI_ACCOUNTS, null, "account_id=" + bundle.getString(InstaLogin.ID), null, null);

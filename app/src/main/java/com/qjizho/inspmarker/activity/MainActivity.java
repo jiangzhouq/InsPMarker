@@ -44,23 +44,24 @@ public class MainActivity extends MintsBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final IProfile profile = new ProfileDrawerItem().withName("Mike Penz").withEmail("mikepenz@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460");
-        final IProfile profile2 = new ProfileDrawerItem().withName("Bernat Borras").withEmail("alorma@github.com").withIcon(Uri.parse("https://avatars3.githubusercontent.com/u/887462?v=3&s=460"));
-        final IProfile profile3 = new ProfileDrawerItem().withName("Max Muster").withEmail("max.mustermann@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460");
-        final IProfile profile4 = new ProfileDrawerItem().withName("Felix House").withEmail("felix.house@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460");
-        final IProfile profile5 = new ProfileDrawerItem().withName("Mr. X").withEmail("mister.x.super@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460").withIdentifier(4);
-        final IProfile profile6 = new ProfileDrawerItem().withName("Batman").withEmail("batman@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460");
+//        final IProfile profile = new ProfileDrawerItem().withName("Mike Penz").withEmail("mikepenz@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460");
+//        final IProfile profile2 = new ProfileDrawerItem().withName("Bernat Borras").withEmail("alorma@github.com").withIcon(Uri.parse("https://avatars3.githubusercontent.com/u/887462?v=3&s=460"));
+//        final IProfile profile3 = new ProfileDrawerItem().withName("Max Muster").withEmail("max.mustermann@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460");
+//        final IProfile profile4 = new ProfileDrawerItem().withName("Felix House").withEmail("felix.house@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460");
+//        final IProfile profile5 = new ProfileDrawerItem().withName("Mr. X").withEmail("mister.x.super@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460").withIdentifier(4);
+//        final IProfile profile6 = new ProfileDrawerItem().withName("Batman").withEmail("batman@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460");
+
 
         headerResult = new AccountHeaderBuilder()
                 .withActivity(this)
                 .withHeaderBackground(R.drawable.header)
                 .addProfiles(
-                        profile,
-                        profile2,
-                        profile3,
-                        profile4,
-                        profile5,
-                        profile6,
+//                        profile,
+//                        profile2,
+//                        profile3,
+//                        profile4,
+//                        profile5,
+//                        profile6,
                         //don't ask but google uses 14dp for the add account icon in gmail but 20dp for the normal icons (like manage account)
                         new ProfileSettingDrawerItem().withName("Add Account").withDescription("Add new GitHub Account").withIcon(new IconicsDrawable(this, GoogleMaterial.Icon.gmd_add).actionBarSize().paddingDp(5).colorRes(R.color.material_drawer_primary_text)).withIdentifier(PROFILE_SETTING),
                         new ProfileSettingDrawerItem().withName("Manage Account").withIcon(GoogleMaterial.Icon.gmd_settings)
@@ -71,13 +72,14 @@ public class MainActivity extends MintsBaseActivity {
                         //sample usage of the onProfileChanged listener
                         //if the clicked item has the identifier 1 add a new profile ;)
                         if (profile instanceof IDrawerItem && ((IDrawerItem) profile).getIdentifier() == PROFILE_SETTING) {
-                            IProfile newProfile = new ProfileDrawerItem().withNameShown(true).withName("Batman").withEmail("batman@gmail.com").withIcon(getResources().getDrawable(R.mipmap.ic_launcher));
-                            if (headerResult.getProfiles() != null) {
-                                //we know that there are 2 setting elements. set the new profile above them ;)
-                                headerResult.addProfile(newProfile, headerResult.getProfiles().size() - 2);
-                            } else {
-                                headerResult.addProfiles(newProfile);
-                            }
+                            pushFragmentToBackStack(FragmentLogin.class,null);
+//                            IProfile newProfile = new ProfileDrawerItem().withNameShown(true).withName("Batman").withEmail("batman@gmail.com").withIcon(getResources().getDrawable(R.mipmap.ic_launcher));
+//                            if (headerResult.getProfiles() != null) {
+//                                //we know that there are 2 setting elements. set the new profile above them ;)
+//                                headerResult.addProfile(newProfile, headerResult.getProfiles().size() - 2);
+//                            } else {
+//                                headerResult.addProfiles(newProfile);
+//                            }
                         }
 
                         //false if you have not consumed the event and it should close the drawer
@@ -86,6 +88,27 @@ public class MainActivity extends MintsBaseActivity {
                 })
                 .withSavedInstance(savedInstanceState)
                 .build();
+//        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
+        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,null,null,null);
+        while(cur.moveToNext()){
+            Log.d("qiqi","profile pic:" + cur.getString(Account.NUM_PROFILE_PICTURE));
+            IProfile newProfile = new ProfileDrawerItem().withNameShown(true).withName(cur.getString(Account.NUM_USERNAME)).withEmail(cur.getString(Account.NUM_FULL_NAME)).withIcon(Uri.parse(cur.getString(Account.NUM_PROFILE_PICTURE)));
+            headerResult.addProfile(newProfile, headerResult.getProfiles().size() - 2);
+        }
+//        if(cur.getCount() > 0){
+//            cur.moveToFirst();
+//            Bundle bundle = new Bundle();
+//            bundle.putString("id",cur.getString(Account.NUM_ACCOUNT_ID));
+//            bundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
+//            FollowsGridView gridFragment = new FollowsGridView();
+//            gridFragment.setArguments(bundle);
+//            pushFragmentToBackStack(FeedGridView.class, bundle);
+////            getFragmentManager().beginTransaction().add(R.id.frag, gridFragment).commit();
+//        }else{
+////            getFragmentManager().beginTransaction().add(R.id.frag, new FragmentLogin()).commit();
+//            pushFragmentToBackStack(FragmentLogin.class,null);
+//        }
+
         result = new DrawerBuilder()
                 .withActivity(this)
 //                .withToolbar(toolbar)
@@ -117,7 +140,7 @@ public class MainActivity extends MintsBaseActivity {
             result.setSelectionByIdentifier(11, false);
 
             //set the active profile
-            headerResult.setActiveProfile(profile3);
+//            headerResult.setActiveProfile(profile3);
         }
 
 //        SharedPreferences shared = getSharedPreferences("setting", 0);
@@ -126,20 +149,7 @@ public class MainActivity extends MintsBaseActivity {
 //
 //        }
 //        SharedPreferences.Editor editor = shared.edit();
-        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
-        if(cur.getCount() > 0){
-            cur.moveToFirst();
-            Bundle bundle = new Bundle();
-            bundle.putString("id",cur.getString(Account.NUM_ACCOUNT_ID));
-            bundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
-            FollowsGridView gridFragment = new FollowsGridView();
-            gridFragment.setArguments(bundle);
-            pushFragmentToBackStack(FeedGridView.class, bundle);
-//            getFragmentManager().beginTransaction().add(R.id.frag, gridFragment).commit();
-        }else{
-//            getFragmentManager().beginTransaction().add(R.id.frag, new FragmentLogin()).commit();
-            pushFragmentToBackStack(FragmentLogin.class,null);
-        }
+
     }
 
     @Override
