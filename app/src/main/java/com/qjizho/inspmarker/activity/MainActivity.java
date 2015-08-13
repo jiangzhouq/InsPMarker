@@ -39,7 +39,8 @@ import com.qjizho.inspmarker.fragment.FragmentLogin;
 import in.srain.cube.mints.base.MintsBaseActivity;
 
 public class MainActivity extends MintsBaseActivity {
-    private static final int PROFILE_SETTING = 1;
+    private static final int PROFILE_SETTING = 99;
+    private static final int PROFILE_MANAGER = 100;
     private AccountHeader headerResult = null;
     private Drawer result = null;
     @Override
@@ -67,14 +68,17 @@ public class MainActivity extends MintsBaseActivity {
 //                        profile6,
                         //don't ask but google uses 14dp for the add account icon in gmail but 20dp for the normal icons (like manage account)
                         new ProfileSettingDrawerItem().withName("Add Account").withDescription("Add new GitHub Account").withIcon(new IconicsDrawable(this, GoogleMaterial.Icon.gmd_add).actionBarSize().paddingDp(5).colorRes(R.color.material_drawer_primary_text)).withIdentifier(PROFILE_SETTING),
-                        new ProfileSettingDrawerItem().withName("Manage Account").withIcon(GoogleMaterial.Icon.gmd_settings)
+                        new ProfileSettingDrawerItem().withName("Manage Account").withIcon(GoogleMaterial.Icon.gmd_settings).withIdentifier(PROFILE_MANAGER)
                 )
                 .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
                     @Override
                     public boolean onProfileChanged(View view, IProfile profile, boolean current) {
                         //sample usage of the onProfileChanged listener
                         //if the clicked item has the identifier 1 add a new profile ;)
-                        if (profile instanceof IDrawerItem && ((IDrawerItem) profile).getIdentifier() == PROFILE_SETTING) {
+                        if(! (profile instanceof IDrawerItem) ){
+                            return false;
+                        }
+                        if (((IDrawerItem) profile).getIdentifier() == PROFILE_SETTING) {
                             InstaLogin instaLogin = new InstaLogin(MainActivity.this,
                                     "c4d946f3dc8a43699aeb7c57b5cbc12d",
                                     "6aba840c8c984aadbae55bad66c5eab3",
@@ -89,6 +93,9 @@ public class MainActivity extends MintsBaseActivity {
 //                            } else {
 //                                headerResult.addProfiles(newProfile);
 //                            }
+                        }else{
+                            Log.d("qiqi", "item clicked:" + ((IDrawerItem) profile).getIdentifier());
+                            pushFragment(((IDrawerItem) profile).getIdentifier());
                         }
 
                         //false if you have not consumed the event and it should close the drawer
@@ -101,22 +108,24 @@ public class MainActivity extends MintsBaseActivity {
         Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,null,null,null);
         while(cur.moveToNext()){
             Log.d("qiqi","profile pic:" + cur.getString(Account.NUM_PROFILE_PICTURE));
-            IProfile newProfile = new ProfileDrawerItem().withNameShown(true).withName(cur.getString(Account.NUM_USERNAME)).withEmail(cur.getString(Account.NUM_FULL_NAME)).withIcon(Uri.parse(cur.getString(Account.NUM_PROFILE_PICTURE)));
+            IProfile newProfile = new ProfileDrawerItem().withNameShown(true).withName(cur.getString(Account.NUM_USERNAME)).withEmail(cur.getString(Account.NUM_FULL_NAME)).withIcon(Uri.parse(cur.getString(Account.NUM_PROFILE_PICTURE))).withIdentifier(Integer.parseInt(cur.getString(Account.NUM_COLUMN_ID)));
             headerResult.addProfile(newProfile, headerResult.getProfiles().size() - 2);
         }
-//        if(cur.getCount() > 0){
-//            cur.moveToFirst();
-//            Bundle bundle = new Bundle();
-//            bundle.putString("id",cur.getString(Account.NUM_ACCOUNT_ID));
-//            bundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
-//            FollowsGridView gridFragment = new FollowsGridView();
-//            gridFragment.setArguments(bundle);
-//            pushFragmentToBackStack(FeedGridView.class, bundle);
-////            getFragmentManager().beginTransaction().add(R.id.frag, gridFragment).commit();
-//        }else{
-////            getFragmentManager().beginTransaction().add(R.id.frag, new FragmentLogin()).commit();
+        Cursor activedCur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
+        if(activedCur.getCount() > 0){
+            activedCur.moveToFirst();
+            Bundle bundle = new Bundle();
+            bundle.putString("id",activedCur.getString(Account.NUM_ACCOUNT_ID));
+            bundle.putString("token", activedCur.getString(Account.NUM_ACCESS_TOKEN));
+            FollowsGridView gridFragment = new FollowsGridView();
+            gridFragment.setArguments(bundle);
+            headerResult.setActiveProfile(Integer.parseInt(activedCur.getString(Account.NUM_COLUMN_ID)));
+            pushFragmentToBackStack(FeedGridView.class, bundle);
+//            getFragmentManager().beginTransaction().add(R.id.frag, gridFragment).commit();
+        }else{
+//            getFragmentManager().beginTransaction().add(R.id.frag, new FragmentLogin()).commit();
 //            pushFragmentToBackStack(FragmentLogin.class,null);
-//        }
+        }
 
         result = new DrawerBuilder()
                 .withActivity(this)
@@ -149,7 +158,7 @@ public class MainActivity extends MintsBaseActivity {
             result.setSelectionByIdentifier(11, false);
 
             //set the active profile
-//            headerResult.setActiveProfile(profile3);
+//            headerResult.setActiveProfile();
         }
 
 //        SharedPreferences shared = getSharedPreferences("setting", 0);
@@ -161,6 +170,18 @@ public class MainActivity extends MintsBaseActivity {
 
     }
 
+    private void pushFragment(int colid){
+        changeActived(colid);
+        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS, null, "_id=" + colid, null, null);
+        if(cur.getCount() > 0){
+            cur.moveToFirst();
+            Bundle fgBundle = new Bundle();
+            fgBundle.putString("id", cur.getString(Account.NUM_ACCOUNT_ID));
+            fgBundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
+            popTopFragment(null);
+            pushFragmentToBackStack(FeedGridView.class, fgBundle);
+        }
+    }
     @Override
     protected int getFragmentContainerId() {
         return R.id.frag;
@@ -189,6 +210,10 @@ public class MainActivity extends MintsBaseActivity {
         }
     }
     private void insertAccount(Bundle bundle){
+        ContentValues updateValue = new ContentValues();
+        updateValue.put(Account.COLUMN_ACTIVED, 0);
+        getContentResolver().update(Account.CONTENT_URI_ACCOUNTS,updateValue,"actived=1",null);
+
         ContentValues value = new ContentValues();
         value.put(Account.COLUMN_ACCOUNT_ID, bundle.getString(InstaLogin.ID));
         value.put(Account.COLUMN_USERNAME, bundle.getString(InstaLogin.USERNAME));
@@ -197,7 +222,7 @@ public class MainActivity extends MintsBaseActivity {
         value.put(Account.COLUMN_PROFILE_PICTURE, bundle.getString(InstaLogin.PROFILE_PIC));
         value.put(Account.COLUMN_ACCESS_TOKEN, bundle.getString(InstaLogin.ACCESS_TOKEN));
         value.put(Account.COLUMN_ACTIVED, 1);
-        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS, null, "account_id=" + bundle.getString(InstaLogin.ID), null, null);
+        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS, null, "_id=" + bundle.getString(InstaLogin.ID), null, null);
         if(cur.getCount() > 0){
             Log.d("qiqi", " already in:" + bundle.getString(InstaLogin.ID));
         }else{
@@ -207,6 +232,15 @@ public class MainActivity extends MintsBaseActivity {
             Uri uri = getContentResolver().insert(Account.CONTENT_URI_ACCOUNTS, value);
             Log.d("qiqi", uri.toString());
         }
+    }
+
+    private void changeActived(int activeId){
+        ContentValues updateValue = new ContentValues();
+        updateValue.put(Account.COLUMN_ACTIVED, 0);
+        getContentResolver().update(Account.CONTENT_URI_ACCOUNTS, updateValue, "actived=1", null);
+        ContentValues activeValue = new ContentValues();
+        activeValue.put(Account.COLUMN_ACTIVED,1);
+        getContentResolver().update(Account.CONTENT_URI_ACCOUNTS, activeValue, "_id="+activeId, null);
     }
 
     @Override
