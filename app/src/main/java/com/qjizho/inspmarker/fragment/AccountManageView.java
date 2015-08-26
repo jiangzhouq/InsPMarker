@@ -174,8 +174,13 @@ public class AccountManageView extends MyTitleBaseFragment{
             fgBundle.putString("id", cur.getString(Account.NUM_ACCOUNT_ID));
             fgBundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
 
-//            android.support.v4.app.FragmentManager fm = getContext().getSupportFragmentManager();
-//            CubeFragment fragment = (CubeFragment) fm.findFragmentByTag(FeedGridView.class.toString());
+
+            android.support.v4.app.FragmentManager fm = getContext().getSupportFragmentManager();
+            CubeFragment fragment = (CubeFragment) fm.findFragmentByTag(FeedGridView.class.toString());
+            fragment.onEnter(fgBundle);
+            fragment.onResume();
+            getContext().goToFragment(FeedGridView.class, fgBundle);
+            
 //            fragment.onEnter(fgBundle);
 //            FragmentTransaction ft = fm.beginTransaction();
 //            ft.show(fragment);
