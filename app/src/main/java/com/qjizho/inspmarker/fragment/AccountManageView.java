@@ -115,10 +115,10 @@ public class AccountManageView extends MyTitleBaseFragment{
                     case 0:
                         // open
 //                        open(item);
+                        deleteAccount(position);
                         break;
 //                    case 1:
                         // delete
-//					delete(item);
 //                        mAppList.remove(position);
 //                        mAdapter.notifyDataSetChanged();
 //                        break;
@@ -210,10 +210,11 @@ public class AccountManageView extends MyTitleBaseFragment{
     class MyAdapter extends BaseAdapter{
         Cursor cur;
         MyAdapter(){
-            cur = getContext().getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,null,null,null);
+
         }
         @Override
         public int getCount() {
+            cur = getContext().getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,null,null,null);
             return cur.getCount();
         }
 
@@ -251,7 +252,10 @@ public class AccountManageView extends MyTitleBaseFragment{
     }
 
 
-    private void deleteAccount(int pos){
-
+    private void deleteAccount(int position){
+        Cursor cur = getContext().getContentResolver().query(Account.CONTENT_URI_ACCOUNTS, null, null, null, null);
+        cur.moveToPosition(position);
+        getContext().getContentResolver().delete(Account.CONTENT_URI_ACCOUNTS, Account.COLUMN_USERNAME + "='" + cur.getString(Account.NUM_USERNAME) + "'",null);
+        myAdapter.notifyDataSetChanged();
     }
 }
