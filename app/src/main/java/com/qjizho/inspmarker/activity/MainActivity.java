@@ -32,6 +32,7 @@ import com.nomad.instagramlogin.InstaLogin;
 import com.nomad.instagramlogin.Keys;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
+import com.qjizho.inspmarker.fragment.AccountManageView;
 import com.qjizho.inspmarker.fragment.FeedGridView;
 import com.qjizho.inspmarker.fragment.FollowsGridView;
 import com.qjizho.inspmarker.fragment.FragmentLogin;
@@ -43,6 +44,13 @@ public class MainActivity extends MintsBaseActivity {
     private static final int PROFILE_MANAGER = 100;
     private AccountHeader headerResult = null;
     private Drawer result = null;
+
+    @Override
+    protected void onResume() {
+//        popToRoot(null);
+        super.onResume();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,7 +101,11 @@ public class MainActivity extends MintsBaseActivity {
 //                            } else {
 //                                headerResult.addProfiles(newProfile);
 //                            }
-                        }else{
+                        }else if(((IDrawerItem) profile).getIdentifier() == PROFILE_MANAGER){
+//                            popTopFragment(null);
+                            pushFragmentToBackStack(AccountManageView.class,null);
+                        }
+                        else{
                             Log.d("qiqi", "item clicked:" + ((IDrawerItem) profile).getIdentifier());
                             pushFragment(((IDrawerItem) profile).getIdentifier());
                         }
@@ -178,8 +190,10 @@ public class MainActivity extends MintsBaseActivity {
             Bundle fgBundle = new Bundle();
             fgBundle.putString("id", cur.getString(Account.NUM_ACCOUNT_ID));
             fgBundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
-            popTopFragment(null);
-            pushFragmentToBackStack(FeedGridView.class, fgBundle);
+//            popTopFragment(null);
+            mCurrentFragment.onEnter(fgBundle);
+            mCurrentFragment.onResume();
+//            popTopFragment(null);
         }
     }
     @Override

@@ -72,20 +72,28 @@ public class FeedGridView extends MyTitleBaseFragment{
         super.createView(inflater, viewGroup, bundle);
         final View view = inflater.inflate(R.layout.fragment_gridview, null);
         LocalDisplay.init(getActivity());
-        mId = ((Bundle)mDataIn).getString("id");
-        mToken = ((Bundle)mDataIn).getString("token");
-
         sGirdImageSize = (LocalDisplay.SCREEN_WIDTH_PIXELS) / 3 ;
         mImageLoader = ImageLoaderFactory.create(getActivity());
+        ptrFrameLayout = (PtrFrameLayout) view.findViewById(R.id.load_more_grid_view_ptr_frame);
+        mGridView = (GridViewWithHeaderAndFooter) view.findViewById(R.id.load_more_grid_view);
+        loadMoreContainer = (LoadMoreGridViewContainer) view.findViewById(R.id.load_more_grid_view_container);
+        return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mId = ((Bundle)mDataIn).getString("id");
+        mToken = ((Bundle)mDataIn).getString("token");
 //        gridListView = (GridView) getActivity().findViewById(R.id.rotate_header_grid_view);
 //        mAdapter = new GridViewAdapter();
 //        gridListView.setAdapter(mAdapter);
-        ptrFrameLayout = (PtrFrameLayout) view.findViewById(R.id.load_more_grid_view_ptr_frame);
+
         ptrFrameLayout.setLoadingMinTime(1000);
         ptrFrameLayout.setPtrHandler(new PtrHandler() {
             @Override
             public void onRefreshBegin(PtrFrameLayout frame) {
-                if(mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()){
+                if (mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()) {
                     mInfos.getDataList().clear();
 //                    nAdapter.notifyDataSetChanged();
                 }
@@ -97,7 +105,7 @@ public class FeedGridView extends MyTitleBaseFragment{
                 return PtrDefaultHandler.checkContentCanBePulledDown(frame, mGridView, header);
             }
         });
-        mGridView = (GridViewWithHeaderAndFooter) view.findViewById(R.id.load_more_grid_view);
+
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -114,7 +122,7 @@ public class FeedGridView extends MyTitleBaseFragment{
 //        mGridView.addHeaderView(headerMarginView);
 
         // load more container
-        loadMoreContainer = (LoadMoreGridViewContainer) view.findViewById(R.id.load_more_grid_view_container);
+
         /*
         Custom the footview- loadmore view
          */
@@ -163,7 +171,6 @@ public class FeedGridView extends MyTitleBaseFragment{
             }
         }, 150);
         // updateData();
-        return view;
     }
 
     public class ISLoadMoreFooterView extends RelativeLayout implements LoadMoreUIHandler {

@@ -5,6 +5,7 @@ repositories {
     maven {
         url "https://oss.sonatype.org/content/repositories/snapshots/"
     }
+    maven { url 'http://clinker.47deg.com/nexus/content/groups/public' }
 }
 
 android {
@@ -40,4 +41,5 @@ dependencies {
         transitive = true
     }
     compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.baoyz.swipemenulistview:library:1.2.1'
 }
