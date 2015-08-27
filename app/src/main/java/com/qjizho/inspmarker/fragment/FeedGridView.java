@@ -263,6 +263,7 @@ public class FeedGridView extends MyTitleBaseFragment{
                         mInfos.getDataList().remove(mInfos.getListLength() -1);
                     }
                     mInfos.updateListInfo(picUrls, !mPagination.isEmpty());
+                    nAdapter.notifyDataSetChanged();
 //                    for(int i = 0; i < picUrls.size(); i++){
 //                        Log.d("qiqi", "" + picUrls.get(i).mStandardResolution);
 //                    }
@@ -286,7 +287,7 @@ public class FeedGridView extends MyTitleBaseFragment{
                 case 0:
                     ptrFrameLayout.refreshComplete();
                     loadMoreContainer.loadMoreFinish(mInfos.getDataList().isEmpty(), mInfos.hasMore());
-                    nAdapter.notifyDataSetChanged();
+
                     break;
             }
             super.handleMessage(msg);
