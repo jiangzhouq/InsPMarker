@@ -37,6 +37,7 @@ import com.qjizho.inspmarker.fragment.FeedGridView;
 import com.qjizho.inspmarker.fragment.FollowsGridView;
 import com.qjizho.inspmarker.fragment.FragmentLogin;
 
+import in.srain.cube.app.CubeFragment;
 import in.srain.cube.mints.base.MintsBaseActivity;
 
 public class MainActivity extends MintsBaseActivity {
@@ -75,8 +76,6 @@ public class MainActivity extends MintsBaseActivity {
 //                        profile5,
 //                        profile6,
                         //don't ask but google uses 14dp for the add account icon in gmail but 20dp for the normal icons (like manage account)
-                        new ProfileSettingDrawerItem().withName("Add Account").withDescription("Add new GitHub Account").withIcon(new IconicsDrawable(this, GoogleMaterial.Icon.gmd_add).actionBarSize().paddingDp(5).colorRes(R.color.material_drawer_primary_text)).withIdentifier(PROFILE_SETTING),
-                        new ProfileSettingDrawerItem().withName("Manage Account").withIcon(GoogleMaterial.Icon.gmd_settings).withIdentifier(PROFILE_MANAGER)
                 )
                 .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
                     @Override
@@ -117,28 +116,6 @@ public class MainActivity extends MintsBaseActivity {
                 .withSavedInstance(savedInstanceState)
                 .build();
 //        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
-        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,null,null,null);
-        while(cur.moveToNext()){
-            Log.d("qiqi","profile pic:" + cur.getString(Account.NUM_PROFILE_PICTURE));
-            IProfile newProfile = new ProfileDrawerItem().withNameShown(true).withName(cur.getString(Account.NUM_USERNAME)).withEmail(cur.getString(Account.NUM_FULL_NAME)).withIcon(Uri.parse(cur.getString(Account.NUM_PROFILE_PICTURE))).withIdentifier(Integer.parseInt(cur.getString(Account.NUM_COLUMN_ID)));
-            headerResult.addProfile(newProfile, headerResult.getProfiles().size() - 2);
-        }
-        Cursor activedCur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
-        if(activedCur.getCount() > 0){
-            activedCur.moveToFirst();
-            Bundle bundle = new Bundle();
-            bundle.putString("id",activedCur.getString(Account.NUM_ACCOUNT_ID));
-            bundle.putString("token", activedCur.getString(Account.NUM_ACCESS_TOKEN));
-            FollowsGridView gridFragment = new FollowsGridView();
-            gridFragment.setArguments(bundle);
-            headerResult.setActiveProfile(Integer.parseInt(activedCur.getString(Account.NUM_COLUMN_ID)));
-            pushFragmentToBackStack(FeedGridView.class, bundle);
-//            getFragmentManager().beginTransaction().add(R.id.frag, gridFragment).commit();
-        }else{
-//            getFragmentManager().beginTransaction().add(R.id.frag, new FragmentLogin()).commit();
-//            pushFragmentToBackStack(FragmentLogin.class,null);
-        }
-
         result = new DrawerBuilder()
                 .withActivity(this)
 //                .withToolbar(toolbar)
@@ -172,16 +149,50 @@ public class MainActivity extends MintsBaseActivity {
             //set the active profile
 //            headerResult.setActiveProfile();
         }
-
-//        SharedPreferences shared = getSharedPreferences("setting", 0);
-//        String sToken = shared.getString("cToken", "");
-//        if(sToken.isEmpty()){
-//
-//        }
-//        SharedPreferences.Editor editor = shared.edit();
-
+        loadAccounts();
     }
 
+    private void loadAccounts(){
+        while(headerResult.getProfiles().size() > 0){
+            headerResult.removeProfile(0);
+        }
+        headerResult.addProfile(new ProfileSettingDrawerItem().withName("Add Account").withDescription("Add new GitHub Account").withIcon(new IconicsDrawable(this, GoogleMaterial.Icon.gmd_add).actionBarSize().paddingDp(5).colorRes(R.color.material_drawer_primary_text)).withIdentifier(PROFILE_SETTING), 0);
+        headerResult.addProfile(new ProfileSettingDrawerItem().withName("Manage Account").withIcon(GoogleMaterial.Icon.gmd_settings).withIdentifier(PROFILE_MANAGER),1);
+
+        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,null,null,null);
+        while(cur.moveToNext()){
+            Log.d("qiqi","profile pic:" + cur.getString(Account.NUM_PROFILE_PICTURE));
+            IProfile newProfile = new ProfileDrawerItem().withNameShown(true).withName(cur.getString(Account.NUM_USERNAME)).withEmail(cur.getString(Account.NUM_FULL_NAME)).withIcon(Uri.parse(cur.getString(Account.NUM_PROFILE_PICTURE))).withIdentifier(Integer.parseInt(cur.getString(Account.NUM_COLUMN_ID)));
+            headerResult.addProfile(newProfile, headerResult.getProfiles().size() - 2);
+        }
+        cur.close();
+        Cursor activedCur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
+        if(activedCur.getCount() > 0){
+            activedCur.moveToFirst();
+            Bundle bundle = new Bundle();
+            bundle.putString("id", activedCur.getString(Account.NUM_ACCOUNT_ID));
+            bundle.putString("token", activedCur.getString(Account.NUM_ACCESS_TOKEN));
+            FollowsGridView gridFragment = new FollowsGridView();
+            gridFragment.setArguments(bundle);
+            headerResult.setActiveProfile(Integer.parseInt(activedCur.getString(Account.NUM_COLUMN_ID)));
+
+            android.support.v4.app.FragmentManager fm = getSupportFragmentManager();
+            CubeFragment fragment = (CubeFragment) fm.findFragmentByTag(FeedGridView.class.toString());
+            if(fragment != null){
+                fragment.onEnter(bundle);
+                fragment.onResume();
+//                goToFragment(FeedGridView.class, bundle);
+            }else{
+                pushFragmentToBackStack(FeedGridView.class, bundle);
+            }
+
+
+
+        }
+        activedCur.close();
+
+
+    }
     private void pushFragment(int colid){
         changeActived(colid);
         Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS, null, "_id=" + colid, null, null);
@@ -217,11 +228,12 @@ public class MainActivity extends MintsBaseActivity {
 //                    FollowsGridView gridFragment = new FollowsGridView();
 //                    gridFragment.setArguments(fgBundle);
                     Log.d("qiqi", "start gridview with id :" + bundle.getString(InstaLogin.ID) + " token:" + bundle.getString(InstaLogin.ACCESS_TOKEN));
-                    pushFragmentToBackStack(FeedGridView.class, fgBundle);
+                    loadAccounts();
 //                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, gridFragment).commit();
                 }
             }
         }
+
     }
     private void insertAccount(Bundle bundle){
         ContentValues updateValue = new ContentValues();
