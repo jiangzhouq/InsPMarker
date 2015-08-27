@@ -44,13 +44,14 @@ import in.srain.cube.image.ImageLoaderFactory;
 public class AccountManageView extends MyTitleBaseFragment{
     private ImageLoader mImageLoader;
     private MyAdapter myAdapter;
+    private AccountsChangeListener mAccountsChangeListener;
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle) {
 
         super.createView(inflater, viewGroup, bundle);
         final View view = inflater.inflate(R.layout.account_manager, null);
         mImageLoader = ImageLoaderFactory.create(getActivity());
-
+        mAccountsChangeListener = (AccountsChangeListener) getActivity();
         ImageButton accountAddBtn = (ImageButton) view.findViewById(R.id.account_plus);
         accountAddBtn.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -255,7 +256,22 @@ public class AccountManageView extends MyTitleBaseFragment{
     private void deleteAccount(int position){
         Cursor cur = getContext().getContentResolver().query(Account.CONTENT_URI_ACCOUNTS, null, null, null, null);
         cur.moveToPosition(position);
-        getContext().getContentResolver().delete(Account.CONTENT_URI_ACCOUNTS, Account.COLUMN_USERNAME + "='" + cur.getString(Account.NUM_USERNAME) + "'",null);
+        getContext().getContentResolver().delete(Account.CONTENT_URI_ACCOUNTS, Account.COLUMN_USERNAME + "='" + cur.getString(Account.NUM_USERNAME) + "'", null);
+        cur = getContext().getContentResolver().query(Account.CONTENT_URI_ACCOUNTS, null, "actived='1'", null, null);
+        if(!cur.moveToNext()){
+            cur = getContext().getContentResolver().query(Account.CONTENT_URI_ACCOUNTS, null, null, null, null);
+            if(cur.moveToNext()){
+                String activeId = cur.getString(Account.NUM_COLUMN_ID);
+                ContentValues updateValue = new ContentValues();
+                ContentValues activeValue = new ContentValues();
+                activeValue.put(Account.COLUMN_ACTIVED, 1);
+                getContext().getContentResolver().update(Account.CONTENT_URI_ACCOUNTS, activeValue, "_id="+activeId, null);
+            }
+        }
         myAdapter.notifyDataSetChanged();
+        mAccountsChangeListener.onAccountsChanged();
+    }
+    public interface AccountsChangeListener{
+        public void onAccountsChanged();
     }
 }

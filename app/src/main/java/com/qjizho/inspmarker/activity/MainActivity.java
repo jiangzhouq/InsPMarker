@@ -40,7 +40,7 @@ import com.qjizho.inspmarker.fragment.FragmentLogin;
 import in.srain.cube.app.CubeFragment;
 import in.srain.cube.mints.base.MintsBaseActivity;
 
-public class MainActivity extends MintsBaseActivity {
+public class MainActivity extends MintsBaseActivity implements AccountManageView.AccountsChangeListener{
     private static final int PROFILE_SETTING = 99;
     private static final int PROFILE_MANAGER = 100;
     private AccountHeader headerResult = null;
@@ -82,7 +82,7 @@ public class MainActivity extends MintsBaseActivity {
                     public boolean onProfileChanged(View view, IProfile profile, boolean current) {
                         //sample usage of the onProfileChanged listener
                         //if the clicked item has the identifier 1 add a new profile ;)
-                        if(! (profile instanceof IDrawerItem) ){
+                        if (!(profile instanceof IDrawerItem)) {
                             return false;
                         }
                         if (((IDrawerItem) profile).getIdentifier() == PROFILE_SETTING) {
@@ -100,11 +100,10 @@ public class MainActivity extends MintsBaseActivity {
 //                            } else {
 //                                headerResult.addProfiles(newProfile);
 //                            }
-                        }else if(((IDrawerItem) profile).getIdentifier() == PROFILE_MANAGER){
+                        } else if (((IDrawerItem) profile).getIdentifier() == PROFILE_MANAGER) {
 //                            popTopFragment(null);
-                            pushFragmentToBackStack(AccountManageView.class,null);
-                        }
-                        else{
+                            pushFragmentToBackStack(AccountManageView.class, null);
+                        } else {
                             Log.d("qiqi", "item clicked:" + ((IDrawerItem) profile).getIdentifier());
                             pushFragment(((IDrawerItem) profile).getIdentifier());
                         }
@@ -113,7 +112,7 @@ public class MainActivity extends MintsBaseActivity {
                         return false;
                     }
                 })
-                .withSavedInstance(savedInstanceState)
+//                .withSavedInstance(savedInstanceState)
                 .build();
 //        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
         result = new DrawerBuilder()
@@ -150,14 +149,15 @@ public class MainActivity extends MintsBaseActivity {
 //            headerResult.setActiveProfile();
         }
         loadAccounts();
+        updateActivedFragment();
     }
 
-    private void loadAccounts(){
+    public void loadAccounts(){
         while(headerResult.getProfiles().size() > 0){
             headerResult.removeProfile(0);
         }
         headerResult.addProfile(new ProfileSettingDrawerItem().withName("Add Account").withDescription("Add new GitHub Account").withIcon(new IconicsDrawable(this, GoogleMaterial.Icon.gmd_add).actionBarSize().paddingDp(5).colorRes(R.color.material_drawer_primary_text)).withIdentifier(PROFILE_SETTING), 0);
-        headerResult.addProfile(new ProfileSettingDrawerItem().withName("Manage Account").withIcon(GoogleMaterial.Icon.gmd_settings).withIdentifier(PROFILE_MANAGER),1);
+        headerResult.addProfile(new ProfileSettingDrawerItem().withName("Manage Account").withIcon(GoogleMaterial.Icon.gmd_settings).withIdentifier(PROFILE_MANAGER), 1);
 
         Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,null,null,null);
         while(cur.moveToNext()){
@@ -169,12 +169,22 @@ public class MainActivity extends MintsBaseActivity {
         Cursor activedCur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
         if(activedCur.getCount() > 0){
             activedCur.moveToFirst();
+            headerResult.setActiveProfile(Integer.parseInt(activedCur.getString(Account.NUM_COLUMN_ID)));
+        }
+        activedCur.close();
+        if(headerResult.isSelectionListShown()){
+            headerResult.toggleSelectionList(this);
+        }
+
+    }
+
+    public void updateActivedFragment(){
+        Cursor activedCur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
+        if(activedCur.getCount() > 0){
+            activedCur.moveToFirst();
             Bundle bundle = new Bundle();
             bundle.putString("id", activedCur.getString(Account.NUM_ACCOUNT_ID));
             bundle.putString("token", activedCur.getString(Account.NUM_ACCESS_TOKEN));
-            FollowsGridView gridFragment = new FollowsGridView();
-            gridFragment.setArguments(bundle);
-            headerResult.setActiveProfile(Integer.parseInt(activedCur.getString(Account.NUM_COLUMN_ID)));
 
             android.support.v4.app.FragmentManager fm = getSupportFragmentManager();
             CubeFragment fragment = (CubeFragment) fm.findFragmentByTag(FeedGridView.class.toString());
@@ -185,14 +195,12 @@ public class MainActivity extends MintsBaseActivity {
             }else{
                 pushFragmentToBackStack(FeedGridView.class, bundle);
             }
-
-
-
+        }else{
+            popToRoot(null);
         }
         activedCur.close();
-
-
     }
+
     private void pushFragment(int colid){
         changeActived(colid);
         Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS, null, "_id=" + colid, null, null);
@@ -229,6 +237,7 @@ public class MainActivity extends MintsBaseActivity {
 //                    gridFragment.setArguments(fgBundle);
                     Log.d("qiqi", "start gridview with id :" + bundle.getString(InstaLogin.ID) + " token:" + bundle.getString(InstaLogin.ACCESS_TOKEN));
                     loadAccounts();
+                    updateActivedFragment();
 //                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, gridFragment).commit();
                 }
             }
@@ -272,5 +281,11 @@ public class MainActivity extends MintsBaseActivity {
     @Override
     protected String getCloseWarning() {
         return "Tap again!";
+    }
+
+    @Override
+    public void onAccountsChanged() {
+        loadAccounts();
+        updateActivedFragment();
     }
 }
