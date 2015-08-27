@@ -255,6 +255,7 @@ public class RecentGridView extends MyTitleBaseFragment{
                         mInfos.getDataList().remove(mInfos.getListLength() -1);
                         }
                     mInfos.updateListInfo(picUrls, !mPagination.isEmpty());
+                    nAdapter.notifyDataSetChanged();
                     Log.d("qiqi", "Then, mInfos.length:" + mInfos.getListLength());
                 } catch (Exception e) {
                     Log.d("qiqi", "error:" + e.toString());
@@ -275,7 +276,7 @@ public class RecentGridView extends MyTitleBaseFragment{
                 case 0:
                     ptrFrameLayout.refreshComplete();
                     loadMoreContainer.loadMoreFinish(mInfos.getDataList().isEmpty(), mInfos.hasMore());
-                    nAdapter.notifyDataSetChanged();
+
                     break;
             }
             super.handleMessage(msg);
