@@ -7,7 +7,7 @@ import in.srain.cube.views.list.ListPageInfo;
  */
 public class ListPageInfoWithPosition {
     public ListPageInfo<InsImage> mInfos;
-    public int mPosition;
+    public int mPosition = 0;
     public String mPagination;
     public String mId;
     public String mToken;

@@ -21,6 +21,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.qjizho.inspmarker.R;
+import com.qjizho.inspmarker.activity.MainActivity;
 import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.helper.ListPageInfoWithPosition;
 import com.qjizho.inspmarker.helper.RecentImageViewHolder;
@@ -83,6 +84,7 @@ public class FeedGridView extends MyTitleBaseFragment{
     @Override
     public void onResume() {
         super.onResume();
+        Log.d("qiq", "FeedGridView onResume.");
         mId = ((Bundle)mDataIn).getString("id");
         mToken = ((Bundle)mDataIn).getString("token");
 //        gridListView = (GridView) getActivity().findViewById(R.id.rotate_header_grid_view);
@@ -173,6 +175,11 @@ public class FeedGridView extends MyTitleBaseFragment{
         // updateData();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d("qiqi", " FeedGridView onPause.");
+    }
     public class ISLoadMoreFooterView extends RelativeLayout implements LoadMoreUIHandler {
 
         public ISLoadMoreFooterView(Context context){
@@ -218,8 +225,7 @@ public class FeedGridView extends MyTitleBaseFragment{
                     JSONObject obj = new JSONObject(new String(responseBody));
                     Log.d("qiqi","obj:"+obj.toString());
                     JSONObject pObj = obj.getJSONObject("pagination");
-                    mPagination = pObj.isNull("next_url") ? "":pObj.getString("next_url");
-                    Log.d("qiqi","mPagination:"+mPagination);
+
                     JSONArray dataArray = obj.getJSONArray("data");
                     Log.d("qiqi","Count:" + dataArray.length());
 //                            Log.d("qiqi", new String(responseBody).toString());
@@ -257,13 +263,16 @@ public class FeedGridView extends MyTitleBaseFragment{
                     loadMoreInsImage.mLowResolution = "12321";
                     loadMoreInsImage.mThumbnail = "12321";
                     picUrls.add(loadMoreInsImage);
+
+                    mPagination = pObj.isNull("next_url") ? "":pObj.getString("next_url");
+                    Log.d("qiqi", "mPagination:" + mPagination);
                     Log.d("qiqi", "Before, mInfos.length:" + mInfos.getListLength());
                     Log.d("qiqi", "Add count:" + picUrls.size());
                     if(mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()){
                         mInfos.getDataList().remove(mInfos.getListLength() -1);
                     }
                     mInfos.updateListInfo(picUrls, !mPagination.isEmpty());
-                    nAdapter.notifyDataSetChanged();
+
 //                    for(int i = 0; i < picUrls.size(); i++){
 //                        Log.d("qiqi", "" + picUrls.get(i).mStandardResolution);
 //                    }
@@ -285,9 +294,18 @@ public class FeedGridView extends MyTitleBaseFragment{
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case 0:
+
+                    JazzyImageViewForFeed jazzyImageViewForFeed = (JazzyImageViewForFeed)getContext().getSupportFragmentManager().findFragmentByTag(JazzyImageViewForFeed.class.toString());
+                    if(jazzyImageViewForFeed != null){
+                        ListPageInfoWithPosition obj = new ListPageInfoWithPosition();
+                        obj.mInfos = mInfos;
+                        obj.mPagination = mPagination;
+                        jazzyImageViewForFeed.onEnter(obj);
+                        jazzyImageViewForFeed.onResume();
+                    }
+                    nAdapter.notifyDataSetChanged();
                     ptrFrameLayout.refreshComplete();
                     loadMoreContainer.loadMoreFinish(mInfos.getDataList().isEmpty(), mInfos.hasMore());
-
                     break;
             }
             super.handleMessage(msg);

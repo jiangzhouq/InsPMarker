@@ -50,6 +50,11 @@ public class MainActivity extends MintsBaseActivity implements AccountManageView
     protected void onResume() {
 //        popToRoot(null);
         super.onResume();
+
+    }
+
+    public CubeFragment getCurrentFragment(){
+        return mCurrentFragment;
     }
 
     @Override

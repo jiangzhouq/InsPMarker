@@ -63,22 +63,38 @@ public class JazzyImageViewForFeed extends MyTitleBaseFragment{
         super.createView(inflater, viewGroup, bundle);
         final View view = inflater.inflate(R.layout.fragment_jazzy, null);
         LocalDisplay.init(getActivity());
-        ListPageInfoWithPosition obj = (ListPageInfoWithPosition)mDataIn;
-        mPosition = obj.mPosition;
-        mInfos = obj.mInfos;
-        mPagination = obj.mPagination;
-        Log.d("qiqi","get position:" + mPosition + " get list:" + mInfos.getDataList().size());
         sGirdImageSize = (LocalDisplay.SCREEN_WIDTH_PIXELS) / 3 ;
         mImageLoader = ImageLoaderFactory.create(getActivity());
-//        gridListView = (GridView) getActivity().findViewById(R.id.rotate_header_grid_view);
-//        mAdapter = new GridViewAdapter();
-//        gridListView.setAdapter(mAdapter);
         jazzyViewPager = (JazzyViewPager) view.findViewById(R.id.jazzy_pager);
         String[] effects = this.getResources().getStringArray(R.array.jazzy_effects);
         jazzyViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.valueOf(effects[0]));
         jazzyViewPager.setPageMargin(30);
-        mAdapter = new JazzyAdapter();
-        jazzyViewPager.setAdapter(mAdapter);
+        return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        ListPageInfoWithPosition obj = (ListPageInfoWithPosition)mDataIn;
+        mPosition = obj.mPosition == 0 ? mPosition : obj.mPosition;
+        mInfos = obj.mInfos;
+        mPagination = obj.mPagination;
+        Log.d("qiqi","get position:" + mPosition + " get list:" + mInfos.getDataList().size());
+
+
+//        gridListView = (GridView) getActivity().findViewById(R.id.rotate_header_grid_view);
+//        mAdapter = new GridViewAdapter();
+//        gridListView.setAdapter(mAdapter);
+
+        if(mAdapter == null){
+            mAdapter = new JazzyAdapter();
+            jazzyViewPager.setAdapter(mAdapter);
+        }else{
+            mAdapter.notifyDataSetChanged();
+        }
+
+
         jazzyViewPager.setCurrentItem(mPosition);
         // updateData();
         jazzyViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -102,7 +118,6 @@ public class JazzyImageViewForFeed extends MyTitleBaseFragment{
 
             }
         });
-        return view;
     }
 
     private void startRequest(String url){

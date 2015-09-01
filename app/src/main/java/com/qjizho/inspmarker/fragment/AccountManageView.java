@@ -28,6 +28,7 @@ import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
 import com.nomad.instagramlogin.InstaLogin;
 import com.qjizho.inspmarker.R;
+import com.qjizho.inspmarker.activity.MainActivity;
 import com.qjizho.inspmarker.db.Account;
 
 import java.util.List;
@@ -174,7 +175,6 @@ public class AccountManageView extends MyTitleBaseFragment{
             changeActived(cur.getString(Account.NUM_COLUMN_ID));
             fgBundle.putString("id", cur.getString(Account.NUM_ACCOUNT_ID));
             fgBundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
-
 
             android.support.v4.app.FragmentManager fm = getContext().getSupportFragmentManager();
             CubeFragment fragment = (CubeFragment) fm.findFragmentByTag(FeedGridView.class.toString());
