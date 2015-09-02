@@ -79,6 +79,7 @@ public class JazzyImageViewForFeed extends MyTitleBaseFragment{
         ListPageInfoWithPosition obj = (ListPageInfoWithPosition)mDataIn;
         mPosition = obj.mPosition == 0 ? mPosition : obj.mPosition;
         mInfos = obj.mInfos;
+        mInfos.getDataList().remove(mInfos.getListLength() -1);
         mPagination = obj.mPagination;
         Log.d("qiqi","get position:" + mPosition + " get list:" + mInfos.getDataList().size());
 
@@ -189,10 +190,22 @@ public class JazzyImageViewForFeed extends MyTitleBaseFragment{
                 case 0:
                     Log.d("qiqi", "Before, mInfos.length:" + mInfos.getListLength());
                     Log.d("qiqi", "Add count:" + picUrls.size());
+                    FeedGridView feedGridView = (FeedGridView)getContext().getSupportFragmentManager().findFragmentByTag(FeedGridView.class.toString());
+                    if(feedGridView != null){
+                        ListPageInfoWithPosition obj = new ListPageInfoWithPosition();
+                        obj.mPosition = jazzyViewPager.getCurrentItem();
+                        obj.mInfos = mInfos;
+                        obj.mPagination = mPagination;
+                        feedGridView.onUpdateData(obj);
+                    }
 
                     mInfos.updateListInfo(picUrls, !mPagination.isEmpty());
                     Log.d("qiqi", "Then, mInfos.length:" + mInfos.getListLength());
                     mAdapter.notifyDataSetChanged();
+
+
+
+
                     break;
             }
             super.handleMessage(msg);

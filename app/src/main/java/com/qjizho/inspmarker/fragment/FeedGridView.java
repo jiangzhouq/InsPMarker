@@ -67,6 +67,7 @@ public class FeedGridView extends MyTitleBaseFragment{
     private GridViewWithHeaderAndFooter mGridView;
     private String mPagination;
     LoadMoreGridViewContainer loadMoreContainer;
+    private int mPosition = 0;
     @Override
     protected View createView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle) {
 
@@ -205,6 +206,33 @@ public class FeedGridView extends MyTitleBaseFragment{
 
         }
     }
+
+    public void onUpdateData(Object data){
+        ListPageInfoWithPosition obj = (ListPageInfoWithPosition)data;
+        mPosition = obj.mPosition == 0 ? mPosition : obj.mPosition;
+        mInfos = obj.mInfos;
+        mInfos.getDataList().remove(mInfos.getListLength() -1);
+        mPagination = obj.mPagination;
+        Log.d("qiqi","get position:" + mPosition + " get list:" + mInfos.getDataList().size());
+
+
+//        gridListView = (GridView) getActivity().findViewById(R.id.rotate_header_grid_view);
+//        mAdapter = new GridViewAdapter();
+//        gridListView.setAdapter(mAdapter);
+        nAdapter.notifyDataSetChanged();
+
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        Log.d("qiqi","hidden:" + hidden);
+        super.onHiddenChanged(hidden);
+        if(!hidden){
+            Log.d("qiqi","mPosition:" + mPosition );
+            mGridView.smoothScrollToPosition(mPosition);
+        }
+    }
+
     private void startRequest(String url){
 
         picUrls.clear();
@@ -223,14 +251,14 @@ public class FeedGridView extends MyTitleBaseFragment{
                 Log.d("qiqi", "code:" + statusCode);
                 try {
                     JSONObject obj = new JSONObject(new String(responseBody));
-                    Log.d("qiqi","obj:"+obj.toString());
+                    Log.d("qiqi", "obj:" + obj.toString());
                     JSONObject pObj = obj.getJSONObject("pagination");
 
                     JSONArray dataArray = obj.getJSONArray("data");
-                    Log.d("qiqi","Count:" + dataArray.length());
+                    Log.d("qiqi", "Count:" + dataArray.length());
 //                            Log.d("qiqi", new String(responseBody).toString());
                     InsImage insImage;
-                    Log.d("qiqi,", "data count:" + dataArray.length() );
+                    Log.d("qiqi,", "data count:" + dataArray.length());
                     for (int i = 0; i < dataArray.length(); i++) {
                         insImage = new InsImage();
                         JSONObject dataObj = dataArray.getJSONObject(i);
@@ -246,11 +274,11 @@ public class FeedGridView extends MyTitleBaseFragment{
                         insImage.mUserFullName = userObj.getString("full_name");
                         insImage.mProfilePciture = userObj.getString("profile_picture");
                         insImage.mUserId = userObj.getString("id");
-                        if(!dataObj.isNull("caption")){
+                        if (!dataObj.isNull("caption")) {
                             JSONObject captionObj = dataObj.getJSONObject("caption");
-                            if(!captionObj.isNull("text")){
+                            if (!captionObj.isNull("text")) {
                                 insImage.mCaption = captionObj.getString("text");
-                            }else{
+                            } else {
                                 insImage.mCaption = "";
                             }
                         }
@@ -264,12 +292,12 @@ public class FeedGridView extends MyTitleBaseFragment{
                     loadMoreInsImage.mThumbnail = "12321";
                     picUrls.add(loadMoreInsImage);
 
-                    mPagination = pObj.isNull("next_url") ? "":pObj.getString("next_url");
+                    mPagination = pObj.isNull("next_url") ? "" : pObj.getString("next_url");
                     Log.d("qiqi", "mPagination:" + mPagination);
                     Log.d("qiqi", "Before, mInfos.length:" + mInfos.getListLength());
                     Log.d("qiqi", "Add count:" + picUrls.size());
-                    if(mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()){
-                        mInfos.getDataList().remove(mInfos.getListLength() -1);
+                    if (mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()) {
+                        mInfos.getDataList().remove(mInfos.getListLength() - 1);
                     }
                     mInfos.updateListInfo(picUrls, !mPagination.isEmpty());
 
@@ -285,7 +313,7 @@ public class FeedGridView extends MyTitleBaseFragment{
 
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.d("qiqi","statusCode:" + statusCode);
+                Log.d("qiqi", "statusCode:" + statusCode);
             }
         });
     }
@@ -311,6 +339,8 @@ public class FeedGridView extends MyTitleBaseFragment{
             super.handleMessage(msg);
         }
     };
+
+
 
     class ViewHolder {
         CubeImageView img;
