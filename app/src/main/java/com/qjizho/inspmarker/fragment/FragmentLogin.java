@@ -16,8 +16,6 @@ import com.nomad.instagramlogin.Keys;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
 
-import in.srain.cube.mints.base.TitleBaseFragment;
-
 /**
  * Created by qjizho on 15-7-13.
  */
@@ -62,7 +60,7 @@ public class FragmentLogin extends MyTitleBaseFragment {
 //                    FollowsGridView gridFragment = new FollowsGridView();
 //                    gridFragment.setArguments(fgBundle);
                     Log.d("qiqi","start gridview with id :" + bundle.getString(InstaLogin.ID) + " token:" + bundle.getString(InstaLogin.ACCESS_TOKEN));
-                    getContext().pushFragmentToBackStack(FeedGridView.class, fgBundle);
+                    getContext().pushFragmentToBackStack(SmallViewFragment.class, fgBundle);
 //                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, gridFragment).commit();
                 }
             }

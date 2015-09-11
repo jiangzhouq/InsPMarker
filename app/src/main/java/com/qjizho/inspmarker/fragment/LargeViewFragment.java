@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceActivity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -15,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -38,7 +36,6 @@ import java.util.ArrayList;
 import in.srain.cube.image.CubeImageView;
 import in.srain.cube.image.ImageLoader;
 import in.srain.cube.image.ImageLoaderFactory;
-import in.srain.cube.mints.base.TitleBaseFragment;
 import in.srain.cube.util.LocalDisplay;
 import in.srain.cube.views.list.ListPageInfo;
 import in.srain.cube.views.list.PagedListViewDataAdapter;
@@ -47,7 +44,7 @@ import in.srain.cube.views.loadmore.LoadMoreGridViewContainer;
 /**
  * Created by qjizho on 15-7-13.
  */
-public class JazzyImageViewForFeed extends MyTitleBaseFragment{
+public class LargeViewFragment extends MyTitleBaseFragment{
     private static int sGirdImageSize = 0;
     private ImageLoader mImageLoader;
     JazzyAdapter mAdapter;
@@ -190,14 +187,14 @@ public class JazzyImageViewForFeed extends MyTitleBaseFragment{
                 case 0:
                     Log.d("qiqi", "Before, mInfos.length:" + mInfos.getListLength());
                     Log.d("qiqi", "Add count:" + picUrls.size());
-                    FeedGridView feedGridView = (FeedGridView)getContext().getSupportFragmentManager().findFragmentByTag(FeedGridView.class.toString());
-                    if(feedGridView != null){
-                        ListPageInfoWithPosition obj = new ListPageInfoWithPosition();
-                        obj.mPosition = jazzyViewPager.getCurrentItem();
-                        obj.mInfos = mInfos;
-                        obj.mPagination = mPagination;
-                        feedGridView.onUpdateData(obj);
-                    }
+//                    SmallViewFragment smallViewFragment = (SmallViewFragment)getContext().getSupportFragmentManager().findFragmentByTag(SmallViewFragment.class.toString());
+//                    if(smallViewFragment != null){
+//                        ListPageInfoWithPosition obj = new ListPageInfoWithPosition();
+//                        obj.mPosition = jazzyViewPager.getCurrentItem();
+//                        obj.mInfos = mInfos;
+//                        obj.mPagination = mPagination;
+//                        smallViewFragment.onUpdateData(obj);
+//                    }
 
                     mInfos.updateListInfo(picUrls, !mPagination.isEmpty());
                     Log.d("qiqi", "Then, mInfos.length:" + mInfos.getListLength());

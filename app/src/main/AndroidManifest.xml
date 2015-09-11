@@ -12,13 +12,18 @@
         android:label="@string/app_name"
         android:theme="@style/CubeTheme.NoWindowAniAndNoTitle" >
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".activity.FeedsActivity"
             android:label="@string/title_activity_main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name=".service.InsHttpRequestService">
+            <intent-filter>
+                <action android:name="com.qjizho.inspmarker.service.InsHttpRequestService" />
+            </intent-filter>
+        </service>
 	<provider
             android:authorities="com.inspmarker.inspmark.accountprovider"
             android:name=".db.AccountDBProvider"></provider>

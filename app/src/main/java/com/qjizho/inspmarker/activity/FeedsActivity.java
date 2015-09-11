@@ -1,15 +1,20 @@
 package com.qjizho.inspmarker.activity;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 
 import com.mikepenz.google_material_typeface_library.GoogleMaterial;
 import com.mikepenz.iconics.IconicsDrawable;
@@ -18,70 +23,70 @@ import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.mikepenz.materialdrawer.accountswitcher.AccountHeader;
 import com.mikepenz.materialdrawer.accountswitcher.AccountHeaderBuilder;
-import com.mikepenz.materialdrawer.model.DividerDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileSettingDrawerItem;
-import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
-import com.mikepenz.materialdrawer.model.SectionDrawerItem;
-import com.mikepenz.materialdrawer.model.SwitchDrawerItem;
-import com.mikepenz.materialdrawer.model.ToggleDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.nomad.instagramlogin.InstaLogin;
 import com.nomad.instagramlogin.Keys;
+import com.qjizho.inspmarker.Constant.Constants;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
 import com.qjizho.inspmarker.fragment.AccountManageView;
-import com.qjizho.inspmarker.fragment.FeedGridView;
-import com.qjizho.inspmarker.fragment.FollowsGridView;
-import com.qjizho.inspmarker.fragment.FragmentLogin;
+import com.qjizho.inspmarker.fragment.SmallViewFragment;
+import com.qjizho.inspmarker.helper.InsImage;
+import com.qjizho.inspmarker.service.InsHttpRequestService;
 
-import in.srain.cube.app.CubeFragment;
-import in.srain.cube.mints.base.MintsBaseActivity;
+import in.srain.cube.views.list.ListPageInfo;
 
-public class MainActivity extends MintsBaseActivity implements AccountManageView.AccountsChangeListener{
+/*
+This is the main activity to show feeded accounts' pics.
+It has two show mode : SmallViewFragment | LargeViewFragment
+ */
+public class FeedsActivity extends Activity {
     private static final int PROFILE_SETTING = 99;
     private static final int PROFILE_MANAGER = 100;
     private AccountHeader headerResult = null;
     private Drawer result = null;
+    private ListPageInfo<InsImage> mInfos = new ListPageInfo<InsImage>(36);
+    private FragmentTransaction mFragmentTransaction;
+    private FragmentManager mFragmentManager;
+    private InsHttpRequestService.InsHttpBinder mInsHttpBinder;
+    private ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mInsHttpBinder = (InsHttpRequestService.InsHttpBinder)service;
+            mInsHttpBinder.getService().setOnReturnListener(new InsHttpRequestService.OnReturnListener() {
+                @Override
+                public void onReturn(ListPageInfo listPageInfo) {
+                    mInfos = listPageInfo;
+                    Fragment curFragment = mFragmentManager.findFragmentById(R.id.frag);
+                    ((SmallViewFragment) curFragment).onFreshData(listPageInfo);
+                }
+            });
+        }
 
-    @Override
-    protected void onResume() {
-//        popToRoot(null);
-        super.onResume();
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
 
+        }
+    };
+    public void askServiceFor(String url,String x0 ,String x1){
+        mInsHttpBinder.startHttpRequest(url,x0 , x1);
     }
-
-    public CubeFragment getCurrentFragment(){
-        return mCurrentFragment;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        final IProfile profile = new ProfileDrawerItem().withName("Mike Penz").withEmail("mikepenz@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460");
-//        final IProfile profile2 = new ProfileDrawerItem().withName("Bernat Borras").withEmail("alorma@github.com").withIcon(Uri.parse("https://avatars3.githubusercontent.com/u/887462?v=3&s=460"));
-//        final IProfile profile3 = new ProfileDrawerItem().withName("Max Muster").withEmail("max.mustermann@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460");
-//        final IProfile profile4 = new ProfileDrawerItem().withName("Felix House").withEmail("felix.house@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460");
-//        final IProfile profile5 = new ProfileDrawerItem().withName("Mr. X").withEmail("mister.x.super@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460").withIdentifier(4);
-//        final IProfile profile6 = new ProfileDrawerItem().withName("Batman").withEmail("batman@gmail.com").withIcon("https://avatars3.githubusercontent.com/u/1476232?v=3&s=460");
-
+        mFragmentManager = getFragmentManager();
+        mFragmentTransaction = mFragmentManager.beginTransaction();
 
         headerResult = new AccountHeaderBuilder()
                 .withActivity(this)
                 .withHeaderBackground(R.drawable.header)
-                .addProfiles(
-//                        profile,
-//                        profile2,
-//                        profile3,
-//                        profile4,
-//                        profile5,
-//                        profile6,
-                        //don't ask but google uses 14dp for the add account icon in gmail but 20dp for the normal icons (like manage account)
-                )
+                .addProfiles()
                 .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
                     @Override
                     public boolean onProfileChanged(View view, IProfile profile, boolean current) {
@@ -91,35 +96,21 @@ public class MainActivity extends MintsBaseActivity implements AccountManageView
                             return false;
                         }
                         if (((IDrawerItem) profile).getIdentifier() == PROFILE_SETTING) {
-                            InstaLogin instaLogin = new InstaLogin(MainActivity.this,
-                                    "c4d946f3dc8a43699aeb7c57b5cbc12d",
-                                    "6aba840c8c984aadbae55bad66c5eab3",
-                                    "https://loggedinbaby");
-
+                            InstaLogin instaLogin = new InstaLogin(FeedsActivity.this, Constants.INSLOGIN_CLIENT_ID, Constants.INSLOGIN_CLIENT_SECRET, Constants.INSLOGIN_CLIENT_CALLBACKURL);
                             instaLogin.login();
-//                            pushFragmentToBackStack(FragmentLogin.class,null);
-//                            IProfile newProfile = new ProfileDrawerItem().withNameShown(true).withName("Batman").withEmail("batman@gmail.com").withIcon(getResources().getDrawable(R.mipmap.ic_launcher));
-//                            if (headerResult.getProfiles() != null) {
-//                                //we know that there are 2 setting elements. set the new profile above them ;)
-//                                headerResult.addProfile(newProfile, headerResult.getProfiles().size() - 2);
-//                            } else {
-//                                headerResult.addProfiles(newProfile);
-//                            }
                         } else if (((IDrawerItem) profile).getIdentifier() == PROFILE_MANAGER) {
-//                            popTopFragment(null);
-                            pushFragmentToBackStack(AccountManageView.class, null);
+                            goToFragment(new AccountManageView(), null, true);
                         } else {
                             Log.d("qiqi", "item clicked:" + ((IDrawerItem) profile).getIdentifier());
-                            pushFragment(((IDrawerItem) profile).getIdentifier());
                         }
 
                         //false if you have not consumed the event and it should close the drawer
                         return false;
                     }
                 })
-//                .withSavedInstance(savedInstanceState)
+                .withSavedInstance(savedInstanceState)
                 .build();
-//        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
+
         result = new DrawerBuilder()
                 .withActivity(this)
 //                .withToolbar(toolbar)
@@ -130,31 +121,36 @@ public class MainActivity extends MintsBaseActivity implements AccountManageView
                         new PrimaryDrawerItem().withName(R.string.menu_following).withIcon(FontAwesome.Icon.faw_eye).withIdentifier(3).withCheckable(false),
                         new PrimaryDrawerItem().withName(R.string.menu_followers).withIcon(FontAwesome.Icon.faw_user).withIdentifier(4).withCheckable(false),
                         new PrimaryDrawerItem().withName(R.string.menu_liked_post).withIcon(FontAwesome.Icon.faw_star).withIdentifier(5).withCheckable(false)
-//                        new PrimaryDrawerItem().withName(R.string.drawer_item_simple_fragment_drawer).withIcon(GoogleMaterial.Icon.gmd_style).withIdentifier(6).withCheckable(false),
-//                        new PrimaryDrawerItem().withName(R.string.drawer_item_embedded_drawer_dualpane).withIcon(GoogleMaterial.Icon.gmd_battery_charging_full).withIdentifier(7).withCheckable(false),
-//                        new PrimaryDrawerItem().withName(R.string.drawer_item_fullscreen_drawer).withIcon(GoogleMaterial.Icon.gmd_style).withIdentifier(8).withCheckable(false),
-//                        new PrimaryDrawerItem().withName(R.string.drawer_item_custom_container_drawer).withIcon(GoogleMaterial.Icon.gmd_my_location).withIdentifier(9).withCheckable(false),
-//                        new PrimaryDrawerItem().withName(R.string.drawer_with_menu).withIcon(GoogleMaterial.Icon.gmd_list).withIdentifier(10).withCheckable(false),
-//                        new SectionDrawerItem().withName(R.string.drawer_item_section_header),
-//                        new SecondaryDrawerItem().withName(R.string.drawer_item_open_source).withIcon(FontAwesome.Icon.faw_github).withIdentifier(20).withCheckable(false),
-//                        new SecondaryDrawerItem().withName(R.string.drawer_item_contact).withIcon(GoogleMaterial.Icon.gmd_format_color_fill).withIdentifier(11).withTag("Bullhorn"),
-//                        new DividerDrawerItem(),
-//                        new SwitchDrawerItem().withName("Switch").withIcon(Octicons.Icon.oct_tools).withChecked(true).withOnCheckedChangeListener(onCheckedChangeListener),
-//                        new SwitchDrawerItem().withName("Switch2").withIcon(Octicons.Icon.oct_tools).withChecked(true).withOnCheckedChangeListener(onCheckedChangeListener),
-//                        new ToggleDrawerItem().withName("Toggle").withIcon(Octicons.Icon.oct_tools).withChecked(true).withOnCheckedChangeListener(onCheckedChangeListener)
                 ) // add the items we want to use with our Drawer
                 .withSavedInstance(savedInstanceState)
                 .withShowDrawerOnFirstLaunch(false)
                 .build();
-        if (savedInstanceState == null) {
-            // set the selection to the item with the identifier 11
-            result.setSelectionByIdentifier(11, false);
 
-            //set the active profile
-//            headerResult.setActiveProfile();
-        }
         loadAccounts();
         updateActivedFragment();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Intent intent = new Intent(this, InsHttpRequestService.class);
+//        intent.setAction("com.qjizho.inspmarker.service.InsHttpRequestService");
+        bindService(intent, conn , Service.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unbindService(conn);
+    }
+
+    public void goToFragment(Fragment fragment, Bundle args, boolean addToBackStack){
+        if(null != mFragmentTransaction){
+            mFragmentTransaction.replace(R.id.frag, fragment);
+            mFragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            mFragmentTransaction.addToBackStack(null);
+            mFragmentTransaction.commit();
+        }
     }
 
     public void loadAccounts(){
@@ -190,40 +186,15 @@ public class MainActivity extends MintsBaseActivity implements AccountManageView
             Bundle bundle = new Bundle();
             bundle.putString("id", activedCur.getString(Account.NUM_ACCOUNT_ID));
             bundle.putString("token", activedCur.getString(Account.NUM_ACCESS_TOKEN));
-
-            android.support.v4.app.FragmentManager fm = getSupportFragmentManager();
-            CubeFragment fragment = (CubeFragment) fm.findFragmentByTag(FeedGridView.class.toString());
-            if(fragment != null){
-                fragment.onEnter(bundle);
-                fragment.onResume();
-//                goToFragment(FeedGridView.class, bundle);
-            }else{
-                pushFragmentToBackStack(FeedGridView.class, bundle);
-            }
-        }else{
-            popToRoot(null);
+            Fragment fragment = new SmallViewFragment();
+            fragment.setArguments(bundle);
+            mFragmentTransaction.add(R.id.frag, fragment);
+            mFragmentTransaction.addToBackStack(null);
+            mFragmentTransaction.commit();
         }
         activedCur.close();
     }
 
-    private void pushFragment(int colid){
-        changeActived(colid);
-        Cursor cur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS, null, "_id=" + colid, null, null);
-        if(cur.getCount() > 0){
-            cur.moveToFirst();
-            Bundle fgBundle = new Bundle();
-            fgBundle.putString("id", cur.getString(Account.NUM_ACCOUNT_ID));
-            fgBundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
-//            popTopFragment(null);
-            mCurrentFragment.onEnter(fgBundle);
-            mCurrentFragment.onResume();
-//            popTopFragment(null);
-        }
-    }
-    @Override
-    protected int getFragmentContainerId() {
-        return R.id.frag;
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -242,7 +213,6 @@ public class MainActivity extends MintsBaseActivity implements AccountManageView
 //                    gridFragment.setArguments(fgBundle);
                     Log.d("qiqi", "start gridview with id :" + bundle.getString(InstaLogin.ID) + " token:" + bundle.getString(InstaLogin.ACCESS_TOKEN));
                     loadAccounts();
-                    updateActivedFragment();
 //                    getActivity().getFragmentManager().beginTransaction().replace(R.id.frag, gridFragment).commit();
                 }
             }
@@ -283,14 +253,5 @@ public class MainActivity extends MintsBaseActivity implements AccountManageView
         getContentResolver().update(Account.CONTENT_URI_ACCOUNTS, activeValue, "_id="+activeId, null);
     }
 
-    @Override
-    protected String getCloseWarning() {
-        return "Tap again!";
-    }
 
-    @Override
-    public void onAccountsChanged() {
-        loadAccounts();
-        updateActivedFragment();
-    }
 }
