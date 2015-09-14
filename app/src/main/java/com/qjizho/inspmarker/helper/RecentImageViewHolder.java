@@ -1,5 +1,6 @@
 package com.qjizho.inspmarker.helper;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -34,6 +35,7 @@ public class RecentImageViewHolder extends ViewHolderBase<InsImage>{
 
     @Override
     public void showData(int position, InsImage insImage) {
+        Log.d("qiqi", "show image :" + insImage.mThumbnail);
         if(insImage.mLowResolution.equals("12321")){
             mImageView.loadImage(mImageloader, "http://jiangzhoumigs-jiangzhoumigs.stor.sinaapp.com/original/download.png", LocalDisplay.SCREEN_WIDTH_PIXELS/3);
         }else{

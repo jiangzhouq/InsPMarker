@@ -2,6 +2,7 @@ package com.qjizho.inspmarker.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -10,6 +11,7 @@ import android.util.Log;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
+import com.qjizho.inspmarker.db.Account;
 import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.helper.Utils;
 
@@ -91,7 +93,7 @@ public class InsHttpRequestService extends Service {
     private ArrayList<InsImage> mPicUrls = new ArrayList<InsImage>();
     public ListPageInfo<InsImage> mInfos;
     public int mPosition = 0;
-    public String mPagination;
+    public String mPagination = "";
     public String mId;
     public String mToken;
     private InsHttpBinder mInsHttpBinder = new InsHttpBinder();
@@ -117,6 +119,11 @@ public class InsHttpRequestService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        Cursor activedCur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
+        activedCur.moveToNext();
+        mToken = activedCur.getString(Account.NUM_ACCESS_TOKEN);
+        activedCur.close();
+        mInfos = new ListPageInfo<InsImage>(36);
         return mInsHttpBinder;
     }
     public void setOnReturnListener (OnReturnListener onReturnListener){
@@ -129,6 +136,8 @@ public class InsHttpRequestService extends Service {
         RequestParams params = new RequestParams();
         params.add("access_token", mToken);
         params.add("count", String.valueOf(Utils.mRefreshCount));
+        url = mPagination.isEmpty() ? url : mPagination;
+        Log.d("qiqi","http request:" + url + " " + mToken);
         client.get(url, params, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {

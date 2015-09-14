@@ -58,7 +58,6 @@ public class SmallViewFragment extends Fragment{
     private static int sGirdImageSize = 0;
     private ImageLoader mImageLoader;
     private PtrFrameLayout ptrFrameLayout;
-    GridViewAdapter mAdapter;
     private ArrayList<InsImage> picUrls = new ArrayList<InsImage>();
     private String mId ;
     private String mToken;
@@ -90,19 +89,18 @@ public class SmallViewFragment extends Fragment{
 
     public void onFreshData(ListPageInfo listPageInfo){
         mInfos = listPageInfo;
-        nAdapter.notifyDataSetChanged();
+        nAdapter.setListPageInfo(mInfos);
+        handler.sendEmptyMessage(0);
     }
     @Override
     public void onResume() {
         super.onResume();
-        Log.d("qiq", "SmallViewFragment onResume.");
-        mId = getArguments().getString("id");
-        mToken = getArguments().getString("token");
+        Log.d("qiqi", "SmallViewFragment onResume.");
         ptrFrameLayout.setLoadingMinTime(1000);
         ptrFrameLayout.setPtrHandler(new PtrHandler() {
             @Override
             public void onRefreshBegin(PtrFrameLayout frame) {
-                ((FeedsActivity)getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, null , null);
+                ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, null, null);
             }
 
             @Override
@@ -116,9 +114,9 @@ public class SmallViewFragment extends Fragment{
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ListPageInfoWithPosition obj = new ListPageInfoWithPosition();
                 obj.mInfos = mInfos;
-                obj.mPosition = (int)id;
+                obj.mPosition = (int) id;
                 obj.mPagination = mPagination;
-                LargeViewFragment  largeViewFragment = new LargeViewFragment();
+                LargeViewFragment largeViewFragment = new LargeViewFragment();
 
 
 //                getContext().pushFragmentToBackStack(LargeViewFragment.class, obj);
@@ -126,7 +124,6 @@ public class SmallViewFragment extends Fragment{
         });
 
         loadMoreContainer.setAutoLoadMore(true);
-        mAdapter = new GridViewAdapter();
         // binding view and data
         nAdapter = new PagedListViewDataAdapter<InsImage>();
         nAdapter.setViewHolderClass(this, RecentImageViewHolder.class, mImageLoader);
@@ -137,7 +134,8 @@ public class SmallViewFragment extends Fragment{
             @Override
             public void onLoadMore(LoadMoreContainer loadMoreContainer) {
                 Log.d("qiqi", "Start load more");
-                mInfos.prepareForNextPage();
+                ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, null, null);
+//                mInfos.prepareForNextPage();
             }
         });
         loadMoreContainer.loadMoreFinish(false, mInfos.hasMore() );
@@ -168,10 +166,6 @@ public class SmallViewFragment extends Fragment{
         mPagination = obj.mPagination;
         Log.d("qiqi","get position:" + mPosition + " get list:" + mInfos.getDataList().size());
 
-
-//        gridListView = (GridView) getActivity().findViewById(R.id.rotate_header_grid_view);
-//        mAdapter = new GridViewAdapter();
-//        gridListView.setAdapter(mAdapter);
         nAdapter.notifyDataSetChanged();
 
     }
@@ -191,9 +185,11 @@ public class SmallViewFragment extends Fragment{
 //                        largeViewFragment.onEnter(obj);
 //                        largeViewFragment.onResume();
 //                    }
+                    Log.d("qiqi", "" + mInfos.getListLength());
                     nAdapter.notifyDataSetChanged();
                     ptrFrameLayout.refreshComplete();
                     loadMoreContainer.loadMoreFinish(mInfos.getDataList().isEmpty(), mInfos.hasMore());
+                    mInfos.prepareForNextPage();
                     break;
             }
             super.handleMessage(msg);
@@ -202,50 +198,5 @@ public class SmallViewFragment extends Fragment{
 
 
 
-    class ViewHolder {
-        CubeImageView img;
-    }
-    private class GridViewAdapter extends BaseAdapter {
-
-        private LayoutInflater mInflater;
-
-        public GridViewAdapter() {
-            mInflater = (LayoutInflater)getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder = null;
-            if(convertView == null){
-                convertView = mInflater.inflate(R.layout.with_grid_view_item_image_list_grid,null);
-                holder = new ViewHolder();
-                holder.img = (CubeImageView) convertView.findViewById(R.id.with_grid_view_item_image);
-                holder.img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                LinearLayout itemLayout = (LinearLayout) convertView.findViewById(R.id.item);
-                LinearLayout.LayoutParams lyp = new LinearLayout.LayoutParams(sGirdImageSize, sGirdImageSize);
-                itemLayout.setLayoutParams(lyp);
-                convertView.setTag(holder);
-            }else{
-                holder = (ViewHolder) convertView.getTag();
-            }
-            holder.img.loadImage(mImageLoader, picUrls.get(position).mStandardResolution);
-            return convertView;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return picUrls.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return picUrls.size();
-        }
-    }
 
 }
