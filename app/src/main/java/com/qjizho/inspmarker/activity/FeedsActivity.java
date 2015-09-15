@@ -34,6 +34,8 @@ import com.qjizho.inspmarker.Constant.Constants;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
 import com.qjizho.inspmarker.fragment.AccountManageView;
+import com.qjizho.inspmarker.fragment.LargeViewFragment;
+import com.qjizho.inspmarker.fragment.MyFragment;
 import com.qjizho.inspmarker.fragment.SmallViewFragment;
 import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.service.InsHttpRequestService;
@@ -61,8 +63,14 @@ public class FeedsActivity extends Activity {
                 @Override
                 public void onReturn(ListPageInfo listPageInfo) {
                     mInfos = listPageInfo;
-                    Fragment curFragment = mFragmentManager.findFragmentById(R.id.frag);
-                    ((SmallViewFragment) curFragment).onFreshData(listPageInfo);
+                    SmallViewFragment smallViewFragment =  (SmallViewFragment)mFragmentManager.findFragmentByTag("SmallViewFragment");
+                    LargeViewFragment largeViewFragment = (LargeViewFragment)mFragmentManager.findFragmentByTag("LargeViewFragment");
+                    if(null != smallViewFragment){
+                        smallViewFragment.onFreshData(listPageInfo);
+                    }
+                    if(null != largeViewFragment){
+                        largeViewFragment.onFreshData(listPageInfo);
+                    }
                 }
             });
         }
@@ -72,8 +80,14 @@ public class FeedsActivity extends Activity {
 
         }
     };
-    public void askServiceFor(String url, boolean begin ,String x0 ,String x1){
-        mInsHttpBinder.startHttpRequest(url, begin, x0 , x1);
+
+    public void updateSmallViewFragmentPosition(int position){
+        Fragment curFragment = mFragmentManager.findFragmentById(R.id.frag);
+        ((SmallViewFragment) curFragment).updatePosition(position);
+    }
+
+    public void askServiceFor(String url, int action ,String x0 ,String x1){
+        mInsHttpBinder.startHttpRequest(url, action, x0 , x1);
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,8 +95,6 @@ public class FeedsActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         mFragmentManager = getFragmentManager();
-        mFragmentTransaction = mFragmentManager.beginTransaction();
-
         headerResult = new AccountHeaderBuilder()
                 .withActivity(this)
                 .withHeaderBackground(R.drawable.header)
@@ -145,12 +157,11 @@ public class FeedsActivity extends Activity {
     }
 
     public void goToFragment(Fragment fragment, Bundle args, boolean addToBackStack){
-        if(null != mFragmentTransaction){
-            mFragmentTransaction.replace(R.id.frag, fragment);
-            mFragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            mFragmentTransaction.addToBackStack(null);
-            mFragmentTransaction.commit();
-        }
+        mFragmentTransaction = mFragmentManager.beginTransaction();
+        mFragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        mFragmentTransaction.replace(R.id.frag, fragment);
+        mFragmentTransaction.addToBackStack(null);
+        mFragmentTransaction.commit();
     }
 
     public void loadAccounts(){
@@ -188,8 +199,9 @@ public class FeedsActivity extends Activity {
             bundle.putString("token", activedCur.getString(Account.NUM_ACCESS_TOKEN));
             Fragment fragment = new SmallViewFragment();
             fragment.setArguments(bundle);
-            mFragmentTransaction.add(R.id.frag, fragment);
-            mFragmentTransaction.addToBackStack(null);
+            mFragmentTransaction = mFragmentManager.beginTransaction();
+            mFragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            mFragmentTransaction.add(R.id.frag, fragment, "SmallViewFragment");
             mFragmentTransaction.commit();
         }
         activedCur.close();

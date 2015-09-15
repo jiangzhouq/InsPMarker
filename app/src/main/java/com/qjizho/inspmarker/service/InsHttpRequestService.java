@@ -90,6 +90,11 @@ public class InsHttpRequestService extends Service {
     //Get recent media from a geography subscription that you created.
     public final String GET_GEOGRAPHY_GEOID_MEDIA_RECENT = "https://api.instagram.com/v1/geographies/%S/media/recent?client_id=%S";
 
+
+    public static final int REQUEST_REFRESH = 0;
+    public static final int REQUEST_HOLD = 1;
+    public static final int REQUEST_LOADMORE = 2;
+
     private ArrayList<InsImage> mPicUrls = new ArrayList<InsImage>();
     public ListPageInfo<InsImage> mInfos;
     public int mPosition = 0;
@@ -102,13 +107,20 @@ public class InsHttpRequestService extends Service {
         void onReturn (ListPageInfo listPageInfo);
     }
     public class InsHttpBinder extends Binder{
-        public void startHttpRequest(String url, boolean begin, String x0, String x1){
+        public void startHttpRequest(String url, int action, String x0, String x1){
             if(url.equals(GET_USERS_SELF_FEED)){
-                if(begin){
-                    mInfos = new ListPageInfo<InsImage>(36);
-                    mPagination = "";
+                switch(action){
+                    case REQUEST_HOLD:
+                        mOnReturnListener.onReturn(mInfos);
+                        break;
+                    case REQUEST_REFRESH:
+                        mInfos = new ListPageInfo<InsImage>(36);
+                        mPagination = "";
+                    case REQUEST_LOADMORE:
+                        startRequest(url);
+                        break;
                 }
-                startRequest(url);
+
             }
         }
         public InsHttpRequestService getService(){
@@ -178,16 +190,16 @@ public class InsHttpRequestService extends Service {
                         mPicUrls.add(insImage);
 
                     }
-                    InsImage loadMoreInsImage = new InsImage();
-                    loadMoreInsImage.mStandardResolution = "12321";
-                    loadMoreInsImage.mLowResolution = "12321";
-                    loadMoreInsImage.mThumbnail = "12321";
-                    mPicUrls.add(loadMoreInsImage);
+//                    InsImage loadMoreInsImage = new InsImage();
+//                    loadMoreInsImage.mStandardResolution = "12321";
+//                    loadMoreInsImage.mLowResolution = "12321";
+//                    loadMoreInsImage.mThumbnail = "12321";
+//                    mPicUrls.add(loadMoreInsImage);
 
                     mPagination = pObj.isNull("next_url") ? "" : pObj.getString("next_url");
-                    if (mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()) {
-                        mInfos.getDataList().remove(mInfos.getListLength() - 1);
-                    }
+//                    if (mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()) {
+//                        mInfos.getDataList().remove(mInfos.getListLength() - 1);
+//                    }
                     mInfos.updateListInfo(mPicUrls, !mPagination.isEmpty());
                     mOnReturnListener.onReturn(mInfos);
 //                    for(int i = 0; i < picUrls.size(); i++){

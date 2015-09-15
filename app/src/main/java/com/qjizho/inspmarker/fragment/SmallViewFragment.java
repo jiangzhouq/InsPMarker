@@ -54,7 +54,7 @@ import in.srain.cube.views.ptr.PtrHandler;
 /**
  * Created by qjizho on 15-7-13.
  */
-public class SmallViewFragment extends Fragment{
+public class SmallViewFragment extends MyFragment{
     private static int sGirdImageSize = 0;
     private ImageLoader mImageLoader;
     private PtrFrameLayout ptrFrameLayout;
@@ -82,16 +82,22 @@ public class SmallViewFragment extends Fragment{
         mGridView = (GridViewWithHeaderAndFooter) view.findViewById(R.id.load_more_grid_view);
         loadMoreContainer = (LoadMoreGridViewContainer) view.findViewById(R.id.load_more_grid_view_container);
         mFragmentManager = getActivity().getFragmentManager();
-        mFragmentTransaction = mFragmentManager.beginTransaction();
-        mFragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
         return view;
     }
 
-    public void onFreshData(ListPageInfo listPageInfo){
+    @Override
+    public void onFreshData(ListPageInfo listPageInfo) {
         mInfos = listPageInfo;
         nAdapter.setListPageInfo(mInfos);
         handler.sendEmptyMessage(0);
     }
+
+    public void updatePosition( int position){
+        mGridView.smoothScrollToPositionFromTop(position, 0);
+//        ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, InsHttpRequestService.REQUEST_HOLD, null, null);
+
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -100,7 +106,7 @@ public class SmallViewFragment extends Fragment{
         ptrFrameLayout.setPtrHandler(new PtrHandler() {
             @Override
             public void onRefreshBegin(PtrFrameLayout frame) {
-                ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, true, null, null);
+                ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, InsHttpRequestService.REQUEST_REFRESH, null, null);
             }
 
             @Override
@@ -112,11 +118,15 @@ public class SmallViewFragment extends Fragment{
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ListPageInfoWithPosition obj = new ListPageInfoWithPosition();
-                obj.mInfos = mInfos;
-                obj.mPosition = (int) id;
-                obj.mPagination = mPagination;
+                mFragmentTransaction = mFragmentManager.beginTransaction();
+                mFragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                Bundle bundle = new Bundle();
+                bundle.putInt("position", position);
                 LargeViewFragment largeViewFragment = new LargeViewFragment();
+                largeViewFragment.setArguments(bundle);
+                mFragmentTransaction.add(R.id.frag, largeViewFragment, "LargeViewFragment");
+                mFragmentTransaction.addToBackStack(null);
+                mFragmentTransaction.commit();
 
 
 //                getContext().pushFragmentToBackStack(LargeViewFragment.class, obj);
@@ -134,7 +144,7 @@ public class SmallViewFragment extends Fragment{
             @Override
             public void onLoadMore(LoadMoreContainer loadMoreContainer) {
                 Log.d("qiqi", "Start load more");
-                ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED,false, null, null);
+                ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED,InsHttpRequestService.REQUEST_LOADMORE, null, null);
 //                mInfos.prepareForNextPage();
             }
         });
@@ -158,17 +168,6 @@ public class SmallViewFragment extends Fragment{
         // updateData();
     }
 
-    public void onUpdateData(Object data){
-        ListPageInfoWithPosition obj = (ListPageInfoWithPosition)data;
-        mPosition = obj.mPosition == 0 ? mPosition : obj.mPosition;
-        mInfos = obj.mInfos;
-        mInfos.getDataList().remove(mInfos.getListLength() - 1);
-        mPagination = obj.mPagination;
-        Log.d("qiqi","get position:" + mPosition + " get list:" + mInfos.getDataList().size());
-
-        nAdapter.notifyDataSetChanged();
-
-    }
 
 
     private Handler handler = new Handler(){
@@ -176,20 +175,12 @@ public class SmallViewFragment extends Fragment{
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case 0:
-
-////                    LargeViewFragment largeViewFragment = (LargeViewFragment)getContext().getSupportFragmentManager().findFragmentByTag(LargeViewFragment.class.toString());
-//                    if(largeViewFragment != null){
-//                        ListPageInfoWithPosition obj = new ListPageInfoWithPosition();
-//                        obj.mInfos = mInfos;
-//                        obj.mPagination = mPagination;
-//                        largeViewFragment.onEnter(obj);
-//                        largeViewFragment.onResume();
-//                    }
                     Log.d("qiqi", "" + mInfos.getListLength());
                     nAdapter.notifyDataSetChanged();
                     ptrFrameLayout.refreshComplete();
                     loadMoreContainer.loadMoreFinish(mInfos.getDataList().isEmpty(), mInfos.hasMore());
                     mInfos.prepareForNextPage();
+
                     break;
             }
             super.handleMessage(msg);
