@@ -2,6 +2,7 @@ package com.qjizho.inspmarker.fragment;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,6 +24,8 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.activity.FeedsActivity;
+import com.qjizho.inspmarker.activity.MyActivity;
+import com.qjizho.inspmarker.activity.PersonActivity;
 import com.qjizho.inspmarker.db.Account;
 import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.helper.JazzyViewPager;
@@ -57,7 +60,7 @@ public class LargeViewFragment extends MyFragment{
     private String mPagination;
     LoadMoreGridViewContainer loadMoreContainer;
     private JazzyViewPager jazzyViewPager;
-
+    private String mRequestUrl = "";
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle) {
@@ -70,6 +73,11 @@ public class LargeViewFragment extends MyFragment{
         String[] effects = this.getResources().getStringArray(R.array.jazzy_effects);
         jazzyViewPager.setTransitionEffect(JazzyViewPager.TransitionEffect.valueOf(effects[0]));
         jazzyViewPager.setPageMargin(30);
+        if(getActivity() instanceof FeedsActivity){
+            mRequestUrl = InsHttpRequestService.GET_USERS_SELF_FEED;
+        }else{
+            mRequestUrl = InsHttpRequestService.GET_USERS_USERID_MEDIA_RECENT;
+        }
         return view;
     }
     @Override
@@ -85,7 +93,7 @@ public class LargeViewFragment extends MyFragment{
     public void onResume() {
         super.onResume();
         int position = getArguments().getInt("position");
-        ((FeedsActivity)getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, InsHttpRequestService.REQUEST_HOLD, null, null);
+        ((MyActivity)getActivity()).onAskServiceFor(mRequestUrl, InsHttpRequestService.REQUEST_HOLD, null, null);
         if(mAdapter == null){
             mAdapter = new JazzyAdapter();
             jazzyViewPager.setAdapter(mAdapter);
@@ -106,7 +114,7 @@ public class LargeViewFragment extends MyFragment{
             public void onPageSelected(int position) {
                 Log.d("qiqi", "current position:" + position);
                 if (position == mInfos.getDataList().size() - 1) {
-                    ((FeedsActivity)getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, InsHttpRequestService.REQUEST_LOADMORE, null, null);
+                    ((MyActivity)getActivity()).onAskServiceFor(mRequestUrl, InsHttpRequestService.REQUEST_LOADMORE, null, null);
                 }
             }
 
@@ -153,15 +161,10 @@ public class LargeViewFragment extends MyFragment{
             mUserProfilePic.setOnClickListener(new View.OnClickListener(){
                 @Override
                 public void onClick(View v) {
-//                    final int mPos = position;
-//                    Cursor cur = getActivity().getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
-//                    if(cur.getCount() > 0){
-//                        cur.moveToFirst();
-//                        Bundle bundle = new Bundle();
-//                        bundle.putString("id",mInfos.getDataList().get(mPos).mUserId);
-//                        bundle.putString("token", cur.getString(Account.NUM_ACCESS_TOKEN));
-//                        getContext().pushFragmentToBackStack(RecentGridView.class, bundle);
-//                    }
+                    final int mPos = position;
+                    Intent intent = new Intent(getActivity(), PersonActivity.class);
+                    intent.putExtra("user_id", mInfos.getDataList().get(mPos).mUserId);
+                    startActivity(intent);
                 }
             });
             TextView text = (TextView)view.findViewById(R.id.message);

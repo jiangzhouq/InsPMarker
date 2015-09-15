@@ -103,25 +103,28 @@ public class InsHttpRequestService extends Service {
     public String mToken;
     private InsHttpBinder mInsHttpBinder = new InsHttpBinder();
     private OnReturnListener mOnReturnListener;
+    private String mCurUserId = "";
     public interface OnReturnListener {
         void onReturn (ListPageInfo listPageInfo);
     }
     public class InsHttpBinder extends Binder{
         public void startHttpRequest(String url, int action, String x0, String x1){
-            if(url.equals(GET_USERS_SELF_FEED)){
-                switch(action){
-                    case REQUEST_HOLD:
-                        mOnReturnListener.onReturn(mInfos);
-                        break;
-                    case REQUEST_REFRESH:
-                        mInfos = new ListPageInfo<InsImage>(36);
-                        mPagination = "";
-                    case REQUEST_LOADMORE:
-                        startRequest(url);
-                        break;
-                }
-
+            if(url.equals(GET_USERS_USERID_MEDIA_RECENT)){
+                url = String.format(url, x0 == null ? mCurUserId : x0);
             }
+            switch(action){
+                case REQUEST_HOLD:
+                    mOnReturnListener.onReturn(mInfos);
+                    break;
+                case REQUEST_REFRESH:
+                    mInfos = new ListPageInfo<InsImage>(36);
+                    mPagination = "";
+                case REQUEST_LOADMORE:
+                    startRequest(url);
+                    break;
+            }
+//
+//            }
         }
         public InsHttpRequestService getService(){
             return InsHttpRequestService.this;

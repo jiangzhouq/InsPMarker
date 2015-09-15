@@ -35,7 +35,6 @@ import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.db.Account;
 import com.qjizho.inspmarker.fragment.AccountManageView;
 import com.qjizho.inspmarker.fragment.LargeViewFragment;
-import com.qjizho.inspmarker.fragment.MyFragment;
 import com.qjizho.inspmarker.fragment.SmallViewFragment;
 import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.service.InsHttpRequestService;
@@ -46,7 +45,7 @@ import in.srain.cube.views.list.ListPageInfo;
 This is the main activity to show feeded accounts' pics.
 It has two show mode : SmallViewFragment | LargeViewFragment
  */
-public class FeedsActivity extends MyActivity {
+public class PersonActivity extends MyActivity {
     private static final int PROFILE_SETTING = 99;
     private static final int PROFILE_MANAGER = 100;
     private AccountHeader headerResult = null;
@@ -110,7 +109,7 @@ public class FeedsActivity extends MyActivity {
                             return false;
                         }
                         if (((IDrawerItem) profile).getIdentifier() == PROFILE_SETTING) {
-                            InstaLogin instaLogin = new InstaLogin(FeedsActivity.this, Constants.INSLOGIN_CLIENT_ID, Constants.INSLOGIN_CLIENT_SECRET, Constants.INSLOGIN_CLIENT_CALLBACKURL);
+                            InstaLogin instaLogin = new InstaLogin(PersonActivity.this, Constants.INSLOGIN_CLIENT_ID, Constants.INSLOGIN_CLIENT_SECRET, Constants.INSLOGIN_CLIENT_CALLBACKURL);
                             instaLogin.login();
                         } else if (((IDrawerItem) profile).getIdentifier() == PROFILE_MANAGER) {
                             goToFragment(new AccountManageView(), null, true);
@@ -141,7 +140,8 @@ public class FeedsActivity extends MyActivity {
                 .build();
 
         loadAccounts();
-        updateActivedFragment();
+        String userId = getIntent().getStringExtra("user_id");
+        updateActivedFragment(userId);
     }
 
     @Override
@@ -192,21 +192,15 @@ public class FeedsActivity extends MyActivity {
 
     }
 
-    public void updateActivedFragment(){
-        Cursor activedCur = getContentResolver().query(Account.CONTENT_URI_ACCOUNTS,null,"actived=1",null,null);
-        if(activedCur.getCount() > 0){
-            activedCur.moveToFirst();
-            Bundle bundle = new Bundle();
-            bundle.putString("id", activedCur.getString(Account.NUM_ACCOUNT_ID));
-            bundle.putString("token", activedCur.getString(Account.NUM_ACCESS_TOKEN));
-            Fragment fragment = new SmallViewFragment();
-            fragment.setArguments(bundle);
-            mFragmentTransaction = mFragmentManager.beginTransaction();
-            mFragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-            mFragmentTransaction.add(R.id.frag, fragment, "SmallViewFragment");
-            mFragmentTransaction.commit();
-        }
-        activedCur.close();
+    public void updateActivedFragment(String userId){
+        Bundle bundle = new Bundle();
+        bundle.putString("user_id", userId);
+        Fragment fragment = new SmallViewFragment();
+        fragment.setArguments(bundle);
+        mFragmentTransaction = mFragmentManager.beginTransaction();
+        mFragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        mFragmentTransaction.add(R.id.frag, fragment, "SmallViewFragment");
+        mFragmentTransaction.commit();
     }
 
 

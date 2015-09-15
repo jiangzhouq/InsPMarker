@@ -23,6 +23,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.activity.FeedsActivity;
+import com.qjizho.inspmarker.activity.MyActivity;
 import com.qjizho.inspmarker.app.InsPMarkerApplication;
 import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.helper.ListPageInfoWithPosition;
@@ -69,7 +70,8 @@ public class SmallViewFragment extends MyFragment{
     private int mPosition = 0;
     private FragmentManager mFragmentManager;
     private FragmentTransaction mFragmentTransaction;
-
+    private String mRequestUrl = "";
+    private String mUserId = "";
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle) {
@@ -82,6 +84,12 @@ public class SmallViewFragment extends MyFragment{
         mGridView = (GridViewWithHeaderAndFooter) view.findViewById(R.id.load_more_grid_view);
         loadMoreContainer = (LoadMoreGridViewContainer) view.findViewById(R.id.load_more_grid_view_container);
         mFragmentManager = getActivity().getFragmentManager();
+        if(getActivity() instanceof FeedsActivity){
+            mRequestUrl = InsHttpRequestService.GET_USERS_SELF_FEED;
+        }else{
+            mRequestUrl = InsHttpRequestService.GET_USERS_USERID_MEDIA_RECENT;
+            mUserId = getArguments().getString("user_id");
+        }
         return view;
     }
 
@@ -94,8 +102,6 @@ public class SmallViewFragment extends MyFragment{
 
     public void updatePosition( int position){
         mGridView.smoothScrollToPositionFromTop(position, 0);
-//        ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, InsHttpRequestService.REQUEST_HOLD, null, null);
-
     }
 
     @Override
@@ -106,7 +112,8 @@ public class SmallViewFragment extends MyFragment{
         ptrFrameLayout.setPtrHandler(new PtrHandler() {
             @Override
             public void onRefreshBegin(PtrFrameLayout frame) {
-                ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, InsHttpRequestService.REQUEST_REFRESH, null, null);
+
+                ((MyActivity) getActivity()).onAskServiceFor(mRequestUrl, InsHttpRequestService.REQUEST_REFRESH, mUserId, null);
             }
 
             @Override
@@ -144,7 +151,7 @@ public class SmallViewFragment extends MyFragment{
             @Override
             public void onLoadMore(LoadMoreContainer loadMoreContainer) {
                 Log.d("qiqi", "Start load more");
-                ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED,InsHttpRequestService.REQUEST_LOADMORE, null, null);
+                ((MyActivity) getActivity()).onAskServiceFor(mRequestUrl,InsHttpRequestService.REQUEST_LOADMORE, null, null);
 //                mInfos.prepareForNextPage();
             }
         });

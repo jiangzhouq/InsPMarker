@@ -19,6 +19,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.PersonActivity"
+            android:label="@string/title_activity_main" >
+            <intent-filter>
+                <action android:name="com.qjizho.inspmarker.PERSON_ACTIVITY" />
+                <category android:name="android.intent.category.default" />
+            </intent-filter>
+        </activity>
         <service android:name=".service.InsHttpRequestService">
             <intent-filter>
                 <action android:name="com.qjizho.inspmarker.service.InsHttpRequestService" />
