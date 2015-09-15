@@ -100,7 +100,7 @@ public class SmallViewFragment extends Fragment{
         ptrFrameLayout.setPtrHandler(new PtrHandler() {
             @Override
             public void onRefreshBegin(PtrFrameLayout frame) {
-                ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, null, null);
+                ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, true, null, null);
             }
 
             @Override
@@ -134,7 +134,7 @@ public class SmallViewFragment extends Fragment{
             @Override
             public void onLoadMore(LoadMoreContainer loadMoreContainer) {
                 Log.d("qiqi", "Start load more");
-                ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED, null, null);
+                ((FeedsActivity) getActivity()).askServiceFor(InsHttpRequestService.GET_USERS_SELF_FEED,false, null, null);
 //                mInfos.prepareForNextPage();
             }
         });

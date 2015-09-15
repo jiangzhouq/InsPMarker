@@ -72,8 +72,8 @@ public class FeedsActivity extends Activity {
 
         }
     };
-    public void askServiceFor(String url,String x0 ,String x1){
-        mInsHttpBinder.startHttpRequest(url,x0 , x1);
+    public void askServiceFor(String url, boolean begin ,String x0 ,String x1){
+        mInsHttpBinder.startHttpRequest(url, begin, x0 , x1);
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {

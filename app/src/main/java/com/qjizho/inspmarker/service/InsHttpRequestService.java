@@ -102,8 +102,12 @@ public class InsHttpRequestService extends Service {
         void onReturn (ListPageInfo listPageInfo);
     }
     public class InsHttpBinder extends Binder{
-        public void startHttpRequest(String url, String x0, String x1){
+        public void startHttpRequest(String url, boolean begin, String x0, String x1){
             if(url.equals(GET_USERS_SELF_FEED)){
+                if(begin){
+                    mInfos = new ListPageInfo<InsImage>(36);
+                    mPagination = "";
+                }
                 startRequest(url);
             }
         }
