@@ -1,9 +1,7 @@
 package com.qjizho.inspmarker.fragment;
 
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -12,28 +10,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.activity.FeedsActivity;
 import com.qjizho.inspmarker.activity.MyActivity;
-import com.qjizho.inspmarker.app.InsPMarkerApplication;
 import com.qjizho.inspmarker.helper.InsImage;
-import com.qjizho.inspmarker.helper.ListPageInfoWithPosition;
 import com.qjizho.inspmarker.helper.RecentImageViewHolder;
-import com.qjizho.inspmarker.helper.Utils;
 import com.qjizho.inspmarker.service.InsHttpRequestService;
-
-import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -47,7 +33,6 @@ import in.srain.cube.views.list.PagedListViewDataAdapter;
 import in.srain.cube.views.loadmore.LoadMoreContainer;
 import in.srain.cube.views.loadmore.LoadMoreGridViewContainer;
 import in.srain.cube.views.loadmore.LoadMoreHandler;
-import in.srain.cube.views.loadmore.LoadMoreUIHandler;
 import in.srain.cube.views.ptr.PtrDefaultHandler;
 import in.srain.cube.views.ptr.PtrFrameLayout;
 import in.srain.cube.views.ptr.PtrHandler;
@@ -72,6 +57,11 @@ public class SmallViewFragment extends MyFragment{
     private FragmentTransaction mFragmentTransaction;
     private String mRequestUrl = "";
     private String mUserId = "";
+    private CubeImageView mHeaderProfilePic;
+    private TextView mHeaderName;
+    private TextView mHeaderFullName;
+    private TextView mHeaderBio;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle) {
@@ -84,11 +74,22 @@ public class SmallViewFragment extends MyFragment{
         mGridView = (GridViewWithHeaderAndFooter) view.findViewById(R.id.load_more_grid_view);
         loadMoreContainer = (LoadMoreGridViewContainer) view.findViewById(R.id.load_more_grid_view_container);
         mFragmentManager = getActivity().getFragmentManager();
+
+
         if(getActivity() instanceof FeedsActivity){
             mRequestUrl = InsHttpRequestService.GET_USERS_SELF_FEED;
         }else{
             mRequestUrl = InsHttpRequestService.GET_USERS_USERID_MEDIA_RECENT;
             mUserId = getArguments().getString("user_id");
+
+            // header place holder
+            View headerMarginView = inflater.inflate(R.layout.user_profile_header_layout, null);
+            headerMarginView.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, LocalDisplay.dp2px(80)));
+            mHeaderProfilePic = (CubeImageView)headerMarginView.findViewById(R.id.header_profile_pic);
+            mHeaderName = (TextView)headerMarginView.findViewById(R.id.header_name);
+            mHeaderFullName = (TextView)headerMarginView.findViewById(R.id.header_full_name);
+            mHeaderBio = (TextView)headerMarginView.findViewById(R.id.header_bio);
+            mGridView.addHeaderView(headerMarginView);
         }
         return view;
     }
@@ -187,7 +188,6 @@ public class SmallViewFragment extends MyFragment{
                     ptrFrameLayout.refreshComplete();
                     loadMoreContainer.loadMoreFinish(mInfos.getDataList().isEmpty(), mInfos.hasMore());
                     mInfos.prepareForNextPage();
-
                     break;
             }
             super.handleMessage(msg);

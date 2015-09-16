@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import in.srain.cube.image.CubeImageView;
 import in.srain.cube.image.ImageLoader;
 import in.srain.cube.image.ImageLoaderFactory;
-import in.srain.cube.mints.base.TitleBaseFragment;
 import in.srain.cube.util.LocalDisplay;
 import in.srain.cube.views.GridViewWithHeaderAndFooter;
 import in.srain.cube.views.list.ListPageInfo;
@@ -114,7 +113,7 @@ public class RecentGridView extends MyTitleBaseFragment{
         mHeaderProfilePic = (CubeImageView)headerMarginView.findViewById(R.id.header_profile_pic);
         mHeaderName = (TextView)headerMarginView.findViewById(R.id.header_name);
         mHeaderFullName = (TextView)headerMarginView.findViewById(R.id.header_full_name);
-        mHeaderBio = (TextView)headerMarginView.findViewById(R.id.bio);
+        mHeaderBio = (TextView)headerMarginView.findViewById(R.id.header_bio);
         mGridView.addHeaderView(headerMarginView);
 
         // load more container

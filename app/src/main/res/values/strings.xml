@@ -23,4 +23,7 @@
     <string name="menu_following">Following</string>
     <string name="menu_followers">Followers</string>
     <string name="menu_liked_post">Liked Posts</string>
+    <string name="string_post">Post</string>
+    <string name="string_followers">Followers</string>
+    <string name="string_followering">Following</string>
 </resources>
