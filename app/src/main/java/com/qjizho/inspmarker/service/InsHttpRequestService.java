@@ -96,7 +96,8 @@ public class InsHttpRequestService extends Service {
     public static final int REQUEST_LOADMORE = 2;
 
     private ArrayList<InsImage> mPicUrls = new ArrayList<InsImage>();
-    public ListPageInfo<InsImage> mInfos;
+    public ListPageInfo<InsImage> mInfosSelfFeed = new ListPageInfo<InsImage>(36);
+    public ListPageInfo<InsImage> mInfosRecentMedia = new ListPageInfo<InsImage>(36);
     public int mPosition = 0;
     public String mPagination = "";
     public String mId;
@@ -109,21 +110,35 @@ public class InsHttpRequestService extends Service {
     }
     public class InsHttpBinder extends Binder{
         public void startHttpRequest(String url, int action, String x0, String x1){
-            if(url.equals(GET_USERS_USERID_MEDIA_RECENT)){
-                url = String.format(url, x0 == null ? mCurUserId : x0);
-            }
-            switch(action){
-                case REQUEST_HOLD:
-                    mOnReturnListener.onReturn(mInfos);
-                    break;
-                case REQUEST_REFRESH:
-                    mInfos = new ListPageInfo<InsImage>(36);
-                    mPagination = "";
-                case REQUEST_LOADMORE:
-                    startRequest(url);
-                    break;
-            }
+            if(url.equals(GET_USERS_SELF_FEED)){
+                switch(action){
+                    case REQUEST_HOLD:
+                        mOnReturnListener.onReturn(mInfosSelfFeed);
+                        break;
+                    case REQUEST_REFRESH:
+                        mInfosSelfFeed = new ListPageInfo<InsImage>(36);
+                        mPagination = "";
+                    case REQUEST_LOADMORE:
+                        requestForGetUsersSelfFeed(url);
+                        break;
+                }
 //
+            }else if(url.equals(GET_USERS_USERID_MEDIA_RECENT)){
+                url = String.format(url, x0 == null ? mCurUserId : x0);
+                switch(action){
+                    case REQUEST_HOLD:
+                        mOnReturnListener.onReturn(mInfosRecentMedia);
+                        break;
+                    case REQUEST_REFRESH:
+                        mInfosRecentMedia = new ListPageInfo<InsImage>(36);
+                        mPagination = "";
+                    case REQUEST_LOADMORE:
+                        requestForGetUsersUseridMediaRecent(url);
+                        break;
+                }
+//
+            }
+
 //            }
         }
         public InsHttpRequestService getService(){
@@ -142,13 +157,13 @@ public class InsHttpRequestService extends Service {
         activedCur.moveToNext();
         mToken = activedCur.getString(Account.NUM_ACCESS_TOKEN);
         activedCur.close();
-        mInfos = new ListPageInfo<InsImage>(36);
         return mInsHttpBinder;
     }
     public void setOnReturnListener (OnReturnListener onReturnListener){
         mOnReturnListener = onReturnListener;
     }
-    private void startRequest(String url){
+
+    private void requestForGetUsersUseridMediaRecent(String url){
 
         mPicUrls.clear();
         AsyncHttpClient client = new AsyncHttpClient();
@@ -163,7 +178,6 @@ public class InsHttpRequestService extends Service {
                 try {
                     JSONObject obj = new JSONObject(new String(responseBody));
                     JSONObject pObj = obj.getJSONObject("pagination");
-
                     JSONArray dataArray = obj.getJSONArray("data");
                     InsImage insImage;
                     for (int i = 0; i < dataArray.length(); i++) {
@@ -189,35 +203,77 @@ public class InsHttpRequestService extends Service {
                                 insImage.mCaption = "";
                             }
                         }
-//                                Log.d("qiqi",dataArray.getJSONObject(i).getString("id"));
                         mPicUrls.add(insImage);
-
                     }
-//                    InsImage loadMoreInsImage = new InsImage();
-//                    loadMoreInsImage.mStandardResolution = "12321";
-//                    loadMoreInsImage.mLowResolution = "12321";
-//                    loadMoreInsImage.mThumbnail = "12321";
-//                    mPicUrls.add(loadMoreInsImage);
-
                     mPagination = pObj.isNull("next_url") ? "" : pObj.getString("next_url");
-//                    if (mInfos.getDataList() != null && !mInfos.getDataList().isEmpty()) {
-//                        mInfos.getDataList().remove(mInfos.getListLength() - 1);
-//                    }
-                    mInfos.updateListInfo(mPicUrls, !mPagination.isEmpty());
-                    mOnReturnListener.onReturn(mInfos);
-//                    for(int i = 0; i < picUrls.size(); i++){
-//                        Log.d("qiqi", "" + picUrls.get(i).mStandardResolution);
-//                    }
+                    mInfosRecentMedia.updateListInfo(mPicUrls, !mPagination.isEmpty());
+                    mOnReturnListener.onReturn(mInfosRecentMedia);
                 } catch (Exception e) {
                     Log.d("qiqi", "error:" + e.toString());
                 }
             }
-
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                 Log.d("qiqi", "statusCode:" + statusCode);
             }
         });
+
+    }
+    private void requestForGetUsersSelfFeed(String url){
+
+        mPicUrls.clear();
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        params.add("access_token", mToken);
+        params.add("count", String.valueOf(Utils.mRefreshCount));
+        url = mPagination.isEmpty() ? url : mPagination;
+        Log.d("qiqi","http request:" + url + " " + mToken);
+        client.get(url, params, new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                try {
+                    JSONObject obj = new JSONObject(new String(responseBody));
+                    JSONObject pObj = obj.getJSONObject("pagination");
+                    JSONArray dataArray = obj.getJSONArray("data");
+                    InsImage insImage;
+                    for (int i = 0; i < dataArray.length(); i++) {
+                        insImage = new InsImage();
+                        JSONObject dataObj = dataArray.getJSONObject(i);
+                        JSONObject imageObj = dataObj.getJSONObject("images");
+                        JSONObject lowPObj = imageObj.getJSONObject("low_resolution");
+                        JSONObject thumbnailPObj = imageObj.getJSONObject("thumbnail");
+                        JSONObject standardPObj = imageObj.getJSONObject("standard_resolution");
+                        insImage.mLowResolution = lowPObj.getString("url");
+                        insImage.mThumbnail = thumbnailPObj.getString("url");
+                        insImage.mStandardResolution = standardPObj.getString("url");
+                        JSONObject userObj = dataObj.getJSONObject("user");
+                        insImage.mUserName = userObj.getString("username");
+                        insImage.mUserFullName = userObj.getString("full_name");
+                        insImage.mProfilePciture = userObj.getString("profile_picture");
+                        insImage.mUserId = userObj.getString("id");
+                        if (!dataObj.isNull("caption")) {
+                            JSONObject captionObj = dataObj.getJSONObject("caption");
+                            if (!captionObj.isNull("text")) {
+                                insImage.mCaption = captionObj.getString("text");
+                            } else {
+                                insImage.mCaption = "";
+                            }
+                        }
+                        mPicUrls.add(insImage);
+                    }
+                    mPagination = pObj.isNull("next_url") ? "" : pObj.getString("next_url");
+                    mInfosRecentMedia.updateListInfo(mPicUrls, !mPagination.isEmpty());
+                    mOnReturnListener.onReturn(mInfosRecentMedia);
+                } catch (Exception e) {
+                    Log.d("qiqi", "error:" + e.toString());
+                }
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                Log.d("qiqi", "statusCode:" + statusCode);
+            }
+        });
+
     }
     @Override
     public boolean onUnbind(Intent intent) {
