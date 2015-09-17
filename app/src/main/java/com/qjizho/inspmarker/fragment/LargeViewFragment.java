@@ -1,9 +1,7 @@
 package com.qjizho.inspmarker.fragment;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -14,29 +12,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.activity.FeedsActivity;
 import com.qjizho.inspmarker.activity.MyActivity;
 import com.qjizho.inspmarker.activity.PersonActivity;
-import com.qjizho.inspmarker.db.Account;
 import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.helper.JazzyViewPager;
-import com.qjizho.inspmarker.helper.ListPageInfoWithPosition;
 import com.qjizho.inspmarker.helper.OutlineContainer;
-import com.qjizho.inspmarker.helper.Utils;
 import com.qjizho.inspmarker.service.InsHttpRequestService;
-
-import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -45,7 +31,6 @@ import in.srain.cube.image.ImageLoader;
 import in.srain.cube.image.ImageLoaderFactory;
 import in.srain.cube.util.LocalDisplay;
 import in.srain.cube.views.list.ListPageInfo;
-import in.srain.cube.views.list.PagedListViewDataAdapter;
 import in.srain.cube.views.loadmore.LoadMoreGridViewContainer;
 
 /**
@@ -127,7 +112,7 @@ public class LargeViewFragment extends MyFragment{
 
     @Override
     public void onDetach() {
-        ((FeedsActivity)getActivity()).updateSmallViewFragmentPosition(jazzyViewPager.getCurrentItem());
+//        ((FeedsActivity)getActivity()).updateSmallViewFragmentPosition(jazzyViewPager.getCurrentItem());
 
         super.onDetach();
     }

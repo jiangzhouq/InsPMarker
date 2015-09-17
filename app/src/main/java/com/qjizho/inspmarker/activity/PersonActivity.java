@@ -1,6 +1,5 @@
 package com.qjizho.inspmarker.activity;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -37,6 +36,7 @@ import com.qjizho.inspmarker.fragment.AccountManageView;
 import com.qjizho.inspmarker.fragment.LargeViewFragment;
 import com.qjizho.inspmarker.fragment.SmallViewFragment;
 import com.qjizho.inspmarker.helper.InsImage;
+import com.qjizho.inspmarker.helper.UserProfileHeaderInfo;
 import com.qjizho.inspmarker.service.InsHttpRequestService;
 
 import in.srain.cube.views.list.ListPageInfo;
@@ -60,7 +60,12 @@ public class PersonActivity extends MyActivity {
             mInsHttpBinder = (InsHttpRequestService.InsHttpBinder)service;
             mInsHttpBinder.getService().setOnReturnListener(new InsHttpRequestService.OnReturnListener() {
                 @Override
-                public void onReturn(ListPageInfo listPageInfo) {
+                public void onReturnForSelfFeed(ListPageInfo listPageInfo) {
+
+                }
+
+                @Override
+                public void onReturnForRecentMedia(ListPageInfo listPageInfo) {
                     mInfos = listPageInfo;
                     SmallViewFragment smallViewFragment =  (SmallViewFragment)mFragmentManager.findFragmentByTag("SmallViewFragment");
                     LargeViewFragment largeViewFragment = (LargeViewFragment)mFragmentManager.findFragmentByTag("LargeViewFragment");
@@ -71,6 +76,15 @@ public class PersonActivity extends MyActivity {
                         largeViewFragment.onFreshData(listPageInfo);
                     }
                 }
+
+                @Override
+                public void onReturnForUserInfo(UserProfileHeaderInfo userProfileHeaderInfo) {
+                    SmallViewFragment smallViewFragment =  (SmallViewFragment)mFragmentManager.findFragmentByTag("SmallViewFragment");
+                    if(null != smallViewFragment){
+                        smallViewFragment.onFreshUserInfo(userProfileHeaderInfo);
+                    }
+                }
+
             });
         }
 

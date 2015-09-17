@@ -13,6 +13,7 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.qjizho.inspmarker.db.Account;
 import com.qjizho.inspmarker.helper.InsImage;
+import com.qjizho.inspmarker.helper.UserProfileHeaderInfo;
 import com.qjizho.inspmarker.helper.Utils;
 
 import org.apache.http.Header;
@@ -99,25 +100,31 @@ public class InsHttpRequestService extends Service {
     public ListPageInfo<InsImage> mInfosSelfFeed = new ListPageInfo<InsImage>(36);
     public ListPageInfo<InsImage> mInfosRecentMedia = new ListPageInfo<InsImage>(36);
     public int mPosition = 0;
-    public String mPagination = "";
+    public String mSelfFeedPagination = "";
+    public String mRecentMediaPagination = "";
     public String mId;
     public String mToken;
     private InsHttpBinder mInsHttpBinder = new InsHttpBinder();
     private OnReturnListener mOnReturnListener;
     private String mCurUserId = "";
+    private UserProfileHeaderInfo mUserProfileHeaderInfo;
+
     public interface OnReturnListener {
-        void onReturn (ListPageInfo listPageInfo);
+        void onReturnForSelfFeed (ListPageInfo listPageInfo);
+        void onReturnForRecentMedia (ListPageInfo listPageInfo);
+        void onReturnForUserInfo(UserProfileHeaderInfo userProfileHeaderInfo);
     }
     public class InsHttpBinder extends Binder{
         public void startHttpRequest(String url, int action, String x0, String x1){
+            Log.d("qiqi", "Service received order . url: " + url + " action:" + action );
             if(url.equals(GET_USERS_SELF_FEED)){
                 switch(action){
                     case REQUEST_HOLD:
-                        mOnReturnListener.onReturn(mInfosSelfFeed);
+                        mOnReturnListener.onReturnForSelfFeed(mInfosSelfFeed);
                         break;
                     case REQUEST_REFRESH:
                         mInfosSelfFeed = new ListPageInfo<InsImage>(36);
-                        mPagination = "";
+                        mSelfFeedPagination = "";
                     case REQUEST_LOADMORE:
                         requestForGetUsersSelfFeed(url);
                         break;
@@ -127,16 +134,23 @@ public class InsHttpRequestService extends Service {
                 url = String.format(url, x0 == null ? mCurUserId : x0);
                 switch(action){
                     case REQUEST_HOLD:
-                        mOnReturnListener.onReturn(mInfosRecentMedia);
+                        mOnReturnListener.onReturnForRecentMedia(mInfosRecentMedia);
                         break;
                     case REQUEST_REFRESH:
                         mInfosRecentMedia = new ListPageInfo<InsImage>(36);
-                        mPagination = "";
+                        mRecentMediaPagination = "";
                     case REQUEST_LOADMORE:
                         requestForGetUsersUseridMediaRecent(url);
                         break;
                 }
 //
+            }else if (url.equals(GET_USERS_USERID)){
+                url = String.format(url, x0 == null ? mCurUserId : x0);
+                switch(action){
+                    case REQUEST_REFRESH:
+                        requestForGetUsersUserid(url);
+                        break;
+                }
             }
 
 //            }
@@ -162,7 +176,39 @@ public class InsHttpRequestService extends Service {
     public void setOnReturnListener (OnReturnListener onReturnListener){
         mOnReturnListener = onReturnListener;
     }
+    private void requestForGetUsersUserid(String url){
+        mUserProfileHeaderInfo = new UserProfileHeaderInfo();
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        params.add("access_token", mToken);
+        client.get(url, params, new AsyncHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                        try {
+                            JSONObject obj = new JSONObject(new String(responseBody));
+                            JSONObject dataObj = obj.getJSONObject("data");
+                            mUserProfileHeaderInfo.mId = dataObj.getString("id");
+                            mUserProfileHeaderInfo.mUserName = dataObj.getString("username");
+                            mUserProfileHeaderInfo.mFullName = dataObj.getString("full_name");
+                            mUserProfileHeaderInfo.mProfilePic = dataObj.getString("profile_picture");
+                            mUserProfileHeaderInfo.mBio = dataObj.getString("bio");
+                            mUserProfileHeaderInfo.mWebSite = dataObj.getString("website");
+                            JSONObject countObj = dataObj.getJSONObject("counts");
+                            mUserProfileHeaderInfo.mCountsMedia = countObj.getString("media");
+                            mUserProfileHeaderInfo.mCountsFollows = countObj.getString("follows");
+                            mUserProfileHeaderInfo.mCountsFollowing = countObj.getString("followed_by");
+                            mOnReturnListener.onReturnForUserInfo(mUserProfileHeaderInfo);
+                        } catch (Exception e) {
+                            Log.d("qiqi", e.toString());
+                        }
+                    }
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                    }
+                }
 
+        );
+    }
     private void requestForGetUsersUseridMediaRecent(String url){
 
         mPicUrls.clear();
@@ -170,7 +216,7 @@ public class InsHttpRequestService extends Service {
         RequestParams params = new RequestParams();
         params.add("access_token", mToken);
         params.add("count", String.valueOf(Utils.mRefreshCount));
-        url = mPagination.isEmpty() ? url : mPagination;
+        url = mRecentMediaPagination.isEmpty() ? url : mRecentMediaPagination;
         Log.d("qiqi","http request:" + url + " " + mToken);
         client.get(url, params, new AsyncHttpResponseHandler() {
             @Override
@@ -205,9 +251,9 @@ public class InsHttpRequestService extends Service {
                         }
                         mPicUrls.add(insImage);
                     }
-                    mPagination = pObj.isNull("next_url") ? "" : pObj.getString("next_url");
-                    mInfosRecentMedia.updateListInfo(mPicUrls, !mPagination.isEmpty());
-                    mOnReturnListener.onReturn(mInfosRecentMedia);
+                    mRecentMediaPagination = pObj.isNull("next_url") ? "" : pObj.getString("next_url");
+                    mInfosRecentMedia.updateListInfo(mPicUrls, !mRecentMediaPagination.isEmpty());
+                    mOnReturnListener.onReturnForRecentMedia(mInfosRecentMedia);
                 } catch (Exception e) {
                     Log.d("qiqi", "error:" + e.toString());
                 }
@@ -226,7 +272,7 @@ public class InsHttpRequestService extends Service {
         RequestParams params = new RequestParams();
         params.add("access_token", mToken);
         params.add("count", String.valueOf(Utils.mRefreshCount));
-        url = mPagination.isEmpty() ? url : mPagination;
+        url = mSelfFeedPagination.isEmpty() ? url : mSelfFeedPagination;
         Log.d("qiqi","http request:" + url + " " + mToken);
         client.get(url, params, new AsyncHttpResponseHandler() {
             @Override
@@ -261,9 +307,9 @@ public class InsHttpRequestService extends Service {
                         }
                         mPicUrls.add(insImage);
                     }
-                    mPagination = pObj.isNull("next_url") ? "" : pObj.getString("next_url");
-                    mInfosRecentMedia.updateListInfo(mPicUrls, !mPagination.isEmpty());
-                    mOnReturnListener.onReturn(mInfosRecentMedia);
+                    mSelfFeedPagination = pObj.isNull("next_url") ? "" : pObj.getString("next_url");
+                    mInfosSelfFeed.updateListInfo(mPicUrls, !mSelfFeedPagination.isEmpty());
+                    mOnReturnListener.onReturnForSelfFeed(mInfosSelfFeed);
                 } catch (Exception e) {
                     Log.d("qiqi", "error:" + e.toString());
                 }

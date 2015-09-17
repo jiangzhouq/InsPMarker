@@ -17,8 +17,10 @@ import android.widget.TextView;
 import com.qjizho.inspmarker.R;
 import com.qjizho.inspmarker.activity.FeedsActivity;
 import com.qjizho.inspmarker.activity.MyActivity;
+import com.qjizho.inspmarker.activity.PersonActivity;
 import com.qjizho.inspmarker.helper.InsImage;
 import com.qjizho.inspmarker.helper.RecentImageViewHolder;
+import com.qjizho.inspmarker.helper.UserProfileHeaderInfo;
 import com.qjizho.inspmarker.service.InsHttpRequestService;
 
 import java.util.ArrayList;
@@ -58,9 +60,13 @@ public class SmallViewFragment extends MyFragment{
     private String mRequestUrl = "";
     private String mUserId = "";
     private CubeImageView mHeaderProfilePic;
-    private TextView mHeaderName;
     private TextView mHeaderFullName;
+    private TextView mHeaderCountMedia;
+    private TextView mHeaderCountFollowers;
+    private TextView mHeaderCountFollowing;
+    private TextView mHeaderName;
     private TextView mHeaderBio;
+    private TextView mHeaderWebsite;
 
     @Nullable
     @Override
@@ -86,9 +92,13 @@ public class SmallViewFragment extends MyFragment{
             View headerMarginView = inflater.inflate(R.layout.user_profile_header_layout, null);
             headerMarginView.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, LocalDisplay.dp2px(80)));
             mHeaderProfilePic = (CubeImageView)headerMarginView.findViewById(R.id.header_profile_pic);
-            mHeaderName = (TextView)headerMarginView.findViewById(R.id.header_name);
             mHeaderFullName = (TextView)headerMarginView.findViewById(R.id.header_full_name);
+            mHeaderCountMedia = (TextView)headerMarginView.findViewById(R.id.header_posts);
+            mHeaderCountFollowers = (TextView)headerMarginView.findViewById(R.id.header_followers);
+            mHeaderCountFollowing = (TextView)headerMarginView.findViewById(R.id.header_following);
+            mHeaderName = (TextView)headerMarginView.findViewById(R.id.header_name);
             mHeaderBio = (TextView)headerMarginView.findViewById(R.id.header_bio);
+            mHeaderWebsite = (TextView)headerMarginView.findViewById(R.id.header_website);
             mGridView.addHeaderView(headerMarginView);
         }
         return view;
@@ -97,8 +107,20 @@ public class SmallViewFragment extends MyFragment{
     @Override
     public void onFreshData(ListPageInfo listPageInfo) {
         mInfos = listPageInfo;
+        Log.d("qiqi", "mInfos new : " + mInfos.getListLength());
         nAdapter.setListPageInfo(mInfos);
         handler.sendEmptyMessage(0);
+    }
+
+    public void onFreshUserInfo(UserProfileHeaderInfo userProfileHeaderInfo){
+        mHeaderProfilePic.loadImage(mImageLoader, userProfileHeaderInfo.mProfilePic);
+        mHeaderFullName.setText(userProfileHeaderInfo.mFullName);
+        mHeaderCountMedia.setText(userProfileHeaderInfo.mCountsMedia);
+        mHeaderCountFollowers.setText(userProfileHeaderInfo.mCountsFollows);
+        mHeaderCountFollowing.setText(userProfileHeaderInfo.mCountsFollowing);
+        mHeaderName.setText(userProfileHeaderInfo.mUserName);
+        mHeaderBio.setText(userProfileHeaderInfo.mBio);
+        mHeaderWebsite.setText(userProfileHeaderInfo.mId);
     }
 
     public void updatePosition( int position){
@@ -115,6 +137,8 @@ public class SmallViewFragment extends MyFragment{
             public void onRefreshBegin(PtrFrameLayout frame) {
 
                 ((MyActivity) getActivity()).onAskServiceFor(mRequestUrl, InsHttpRequestService.REQUEST_REFRESH, mUserId, null);
+                if(getActivity() instanceof PersonActivity)
+                    ((MyActivity) getActivity()).onAskServiceFor(InsHttpRequestService.GET_USERS_USERID, InsHttpRequestService.REQUEST_REFRESH, mUserId, null);
             }
 
             @Override
@@ -129,7 +153,8 @@ public class SmallViewFragment extends MyFragment{
                 mFragmentTransaction = mFragmentManager.beginTransaction();
                 mFragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
                 Bundle bundle = new Bundle();
-                bundle.putInt("position", position);
+                bundle.putInt("position", (int) id);
+                Log.d("qiqi", "Clicked Pos:" + id);
                 LargeViewFragment largeViewFragment = new LargeViewFragment();
                 largeViewFragment.setArguments(bundle);
                 mFragmentTransaction.add(R.id.frag, largeViewFragment, "LargeViewFragment");
@@ -183,7 +208,7 @@ public class SmallViewFragment extends MyFragment{
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case 0:
-                    Log.d("qiqi", "" + mInfos.getListLength());
+
                     nAdapter.notifyDataSetChanged();
                     ptrFrameLayout.refreshComplete();
                     loadMoreContainer.loadMoreFinish(mInfos.getDataList().isEmpty(), mInfos.hasMore());
