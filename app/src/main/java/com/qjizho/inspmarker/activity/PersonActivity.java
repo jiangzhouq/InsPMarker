@@ -94,7 +94,8 @@ public class PersonActivity extends MyActivity {
         }
     };
 
-    public void updateSmallViewFragmentPosition(int position){
+    @Override
+    public void onUpdateSmallViewFragmentPosition(int position) {
         Fragment curFragment = mFragmentManager.findFragmentById(R.id.frag);
         ((SmallViewFragment) curFragment).updatePosition(position);
     }

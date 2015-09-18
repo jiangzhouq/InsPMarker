@@ -112,7 +112,7 @@ public class LargeViewFragment extends MyFragment{
 
     @Override
     public void onDetach() {
-//        ((FeedsActivity)getActivity()).updateSmallViewFragmentPosition(jazzyViewPager.getCurrentItem());
+        ((MyActivity)getActivity()).onUpdateSmallViewFragmentPosition(jazzyViewPager.getCurrentItem());
 
         super.onDetach();
     }

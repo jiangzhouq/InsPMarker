@@ -124,7 +124,17 @@ public class SmallViewFragment extends MyFragment{
     }
 
     public void updatePosition( int position){
-        mGridView.smoothScrollToPositionFromTop(position, 0);
+        int plusPosition;
+        if(getActivity() instanceof PersonActivity){
+            plusPosition = 9;
+        }else{
+            plusPosition = 12;
+        }
+
+        int firstPosition  = mGridView.getFirstVisiblePosition();
+        if(position >= firstPosition && position < plusPosition + firstPosition)
+            return;
+        mGridView.smoothScrollToPositionFromTop(position -6 , 0);
     }
 
     @Override
@@ -160,7 +170,6 @@ public class SmallViewFragment extends MyFragment{
                 mFragmentTransaction.add(R.id.frag, largeViewFragment, "LargeViewFragment");
                 mFragmentTransaction.addToBackStack(null);
                 mFragmentTransaction.commit();
-
 
 //                getContext().pushFragmentToBackStack(LargeViewFragment.class, obj);
             }

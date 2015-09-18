@@ -7,4 +7,5 @@ import android.app.Activity;
  */
 public abstract class MyActivity  extends Activity{
     public abstract void onAskServiceFor(String url, int action ,String x0 ,String x1);
+    public abstract void onUpdateSmallViewFragmentPosition(int position);
 }
