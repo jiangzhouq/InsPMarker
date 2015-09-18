@@ -10,8 +10,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.qjizho.inspmarker.R;
@@ -67,7 +67,7 @@ public class SmallViewFragment extends MyFragment{
     private TextView mHeaderName;
     private TextView mHeaderBio;
     private TextView mHeaderWebsite;
-
+    private LinearLayout mPlusTexts;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle bundle) {
@@ -89,9 +89,27 @@ public class SmallViewFragment extends MyFragment{
             mUserId = getArguments().getString("user_id");
 
             // header place holder
-            View headerMarginView = inflater.inflate(R.layout.user_profile_header_layout, null);
-            headerMarginView.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, LocalDisplay.dp2px(80)));
+            final View headerMarginView = inflater.inflate(R.layout.user_profile_header_layout, null);
+//            headerMarginView.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+            mPlusTexts = (LinearLayout) headerMarginView.findViewById(R.id.plus_texts);
             mHeaderProfilePic = (CubeImageView)headerMarginView.findViewById(R.id.header_profile_pic);
+            headerMarginView.setOnClickListener(new View.OnClickListener() {
+                private boolean high = false;
+                @Override
+                public void onClick(View v) {
+                    LinearLayout.LayoutParams lyp = (LinearLayout.LayoutParams) mPlusTexts.getLayoutParams();
+                    if (high) {
+                        high = false;
+                        lyp.height = LocalDisplay.dp2px(0);
+                    } else {
+                        high = true;
+                        lyp.height = LinearLayout.LayoutParams.WRAP_CONTENT;
+                    }
+                    mPlusTexts.setLayoutParams(lyp);
+                    nAdapter.notifyDataSetChanged();
+                }
+            });
             mHeaderFullName = (TextView)headerMarginView.findViewById(R.id.header_full_name);
             mHeaderCountMedia = (TextView)headerMarginView.findViewById(R.id.header_posts);
             mHeaderCountFollowers = (TextView)headerMarginView.findViewById(R.id.header_followers);
